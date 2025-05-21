@@ -12,6 +12,7 @@ Especializado en automatización industrial, desarrollo de software y ciencia de
 - 🌐 Desarrollo Web
 - 📊 Análisis de Datos
 - ⚡ Sistemas Eléctricos
+- ❄️ Refrigeración Industrial
 
 ## 🚀 Stack Tecnológico
 
