@@ -1,0 +1,187 @@
+Crear una aplicación Android nativa para detección y registro de patentes vehiculares chilenas que se integre con un backend FastAPI. La aplicación debe tener las siguientes características y componentes:
+
+1. Configuración del Proyecto:
+- Lenguaje: Kotlin
+- Versión mínima de SDK: 24 (Android 7.0)
+- Implementar Clean Architecture con MVVM
+- Usar Android Jetpack Components
+- Soporte para modo oscuro y claro
+- Soporte para orientación vertical y horizontal
+
+2. Dependencias principales:
+```gradle
+// Jetpack Components
+implementation 'androidx.core:core-ktx:1.10.1'
+implementation 'androidx.appcompat:appcompat:1.6.1'
+implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1'
+implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.1'
+implementation 'androidx.navigation:navigation-fragment-ktx:2.6.0'
+implementation 'androidx.navigation:navigation-ui-ktx:2.6.0'
+
+// CameraX
+implementation 'androidx.camera:camera-core:1.2.3'
+implementation 'androidx.camera:camera-camera2:1.2.3'
+implementation 'androidx.camera:camera-lifecycle:1.2.3'
+implementation 'androidx.camera:camera-view:1.2.3'
+
+// Retrofit para API REST
+implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+implementation 'com.squareup.okhttp3:logging-interceptor:4.9.0'
+
+// Room para base de datos local
+implementation 'androidx.room:room-runtime:2.5.1'
+implementation 'androidx.room:room-ktx:2.5.1'
+kapt 'androidx.room:room-compiler:2.5.1'
+
+// Corrutinas para async
+implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
+
+// Dagger Hilt para inyección de dependencias
+implementation 'com.google.dagger:hilt-android:2.44'
+kapt 'com.google.dagger:hilt-android-compiler:2.44'
+
+// Material Design
+implementation 'com.google.android.material:material:1.9.0'
+```
+
+3. Estructura de Paquetes:
+```
+com.patentreader.chile/
+├── data/
+│   ├── api/
+│   │   ├── ApiService.kt (Definición de endpoints)
+│   │   └── RetrofitClient.kt
+│   ├── db/
+│   │   ├── PatentDatabase.kt
+│   │   ├── PatentDao.kt
+│   │   └── entities/
+│   └── repository/
+│       └── PatentRepository.kt
+├── di/
+│   └── AppModule.kt
+├── domain/
+│   ├── model/
+│   │   └── Patent.kt
+│   └── usecase/
+│       ├── CapturePatentUseCase.kt
+│       └── SyncPatentsUseCase.kt
+└── ui/
+    ├── MainActivity.kt
+    ├── camera/
+    │   ├── CameraFragment.kt
+    │   └── CameraViewModel.kt
+    ├── history/
+    │   ├── HistoryFragment.kt
+    │   └── HistoryViewModel.kt
+    └── settings/
+        ├── SettingsFragment.kt
+        └── SettingsViewModel.kt
+```
+
+4. Características Principales:
+
+a) Captura de Patentes:
+- Implementar CameraX para vista previa en tiempo real
+- Botón de captura manual
+- Detección automática cuando se detecte una patente en el marco
+- Overlay con guía de alineación para la patente
+- Feedback visual y háptico al capturar
+- Validación de calidad de imagen antes de enviar
+
+b) Sincronización y Almacenamiento:
+- Guardar capturas en Room Database local
+- Sincronización automática cuando hay conexión
+- Cola de sincronización para capturas offline
+- Manejo de conflictos de sincronización
+- Compresión de imágenes antes de enviar
+
+c) Interfaz de Usuario:
+- Bottom Navigation con 3 secciones: Cámara, Historial, Configuración
+- Modo oscuro/claro automático según sistema
+- Animaciones suaves entre transiciones
+- Indicadores de estado de sincronización
+- Filtros y búsqueda en el historial
+- Detalles de cada captura con metadata
+
+d) API Integration (Retrofit):
+```kotlin
+interface ApiService {
+    @Multipart
+    @POST("detections")
+    suspend fun uploadPatent(
+        @Part image: MultipartBody.Part,
+        @Part("metadata") metadata: RequestBody
+    ): Response<PatentResponse>
+
+    @GET("detections")
+    suspend fun getPatents(): Response<List<PatentResponse>>
+}
+```
+
+e) Base de Datos Local (Room):
+```kotlin
+@Entity(tableName = "patents")
+data class PatentEntity(
+    @PrimaryKey val id: String = UUID.randomUUID().toString(),
+    val patentNumber: String,
+    val timestamp: Long,
+    val latitude: Double?,
+    val longitude: Double?,
+    val imagePath: String,
+    val syncStatus: SyncStatus,
+    val errorMessage: String?
+)
+```
+
+5. Características de Seguridad:
+- Implementar JWT Authentication
+- Almacenamiento seguro de credenciales
+- Cifrado de datos locales
+- Validación de certificados SSL
+- Manejo seguro de datos sensibles
+
+6. Optimizaciones:
+- Lazy loading de imágenes
+- Compresión de imágenes
+- Cache de red
+- Paginación en el historial
+- Manejo eficiente de recursos de cámara
+
+7. Configuraciones:
+- URL del servidor
+- Calidad de imagen
+- Modo de captura (manual/automático)
+- Frecuencia de sincronización
+- Notificaciones
+- Gestión de almacenamiento
+
+8. Testing:
+- Unit tests para ViewModels y UseCases
+- UI tests para flujos principales
+- Integration tests para Room y Retrofit
+- Mocks para servicios de red
+- Test de rotación y cambios de configuración
+
+9. CI/CD:
+- GitHub Actions para build y tests
+- Firma automática de APK
+- Distribución a través de Firebase App Distribution
+- Monitoreo de crashes con Firebase Crashlytics
+
+10. Características Adicionales:
+- Soporte para múltiples idiomas (español/inglés)
+- Accesibilidad completa
+- Analytics para uso de la app
+- Reportes de errores
+- Tutorial inicial para nuevos usuarios
+- Modo offline completo
+
+11. Manejo de Errores:
+- Retry policy para fallos de red
+- Feedback claro al usuario
+- Logging para debugging
+- Recovery automático de crashes
+- Validación de entrada de usuario
+
+Esta aplicación debe ser robusta, eficiente y fácil de mantener, siguiendo las mejores prácticas de desarrollo Android y patrones de diseño modernos.
