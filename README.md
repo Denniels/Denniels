@@ -42,12 +42,21 @@ Especializado en automatización industrial, desarrollo de software (web y móvi
 
 ## 🏆 Proyectos Destacados
 
-### [GPS Tracker Android + Streamlit](https://github.com/Denniels/telemetrix_test/Android_mqtt_gps_track)
-Aplicación de seguimiento GPS en tiempo real
-- 📱 Aplicación Android nativa en Kotlin
-- 🗺️ Visualización de datos con Streamlit
-- 📡 Comunicación en tiempo real mediante MQTT
-- 🗄️ Almacenamiento en PostgreSQL
+### [📊 Data Science Portfolio](https://github.com/Denniels/ds_portfolio)
+Mi portafolio completo de proyectos de ciencia de datos
+- 🧠 Proyectos de Machine Learning
+- 📈 Análisis de datos y visualizaciones interactivas
+- 🔬 Casos de estudio reales y datasets diversos
+- 💻 Implementaciones en Python con Jupyter Notebooks
+- 🚀 Modelos desplegados y aplicaciones web
+
+### [⚡ Cálculo Eléctrico](https://github.com/Denniels/calculo_electrico)
+Herramientas para cálculos eléctricos industriales
+- 🔌 Cálculos de circuitos eléctricos
+- � Dimensionamiento de conductores y protecciones
+- ⚙️ Automatización de cálculos técnicos
+- � Generación de reportes técnicos
+- 🏭 Aplicado a sistemas industriales
 
 ### [Integral Service SPA](https://github.com/Denniels/industrial_services_app)
 Sistema de gestión empresarial para servicios industriales
