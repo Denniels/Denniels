@@ -5,6 +5,7 @@ Especializado en automatización industrial, desarrollo de software (web y móvi
 
 [![GitHub followers](https://img.shields.io/github/followers/Denniels?label=Follow&style=social)](https://github.com/Denniels)
 [![LinkedIn](https://img.shields.io/badge/-LinkedIn-0077B5?style=flat&logo=LinkedIn&logoColor=white)](https://www.linkedin.com/in/daniel-andres-mardones-sanhueza-27b73777)
+[![Streamlit Portfolio](https://img.shields.io/badge/-Data%20Science%20Portfolio-FF4B4B?style=flat&logo=Streamlit&logoColor=white)](https://dsportfolio-jm67tsp8uwfsbnpfetysnh.streamlit.app/)
 
 ## 💼 Experiencia
 - 🏭 Automatización Industrial
