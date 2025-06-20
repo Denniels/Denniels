@@ -54,22 +54,26 @@ Mi portafolio completo de proyectos de ciencia de datos
 ### [⚡ Cálculo Eléctrico](https://github.com/Denniels/calculo_electrico)
 Herramientas para cálculos eléctricos industriales
 - 🔌 Cálculos de circuitos eléctricos
-- � Dimensionamiento de conductores y protecciones
+- 📐 Dimensionamiento de conductores y protecciones
 - ⚙️ Automatización de cálculos técnicos
-- � Generación de reportes técnicos
+- 📊 Generación de reportes técnicos
 - 🏭 Aplicado a sistemas industriales
 
-### [Integral Service SPA](https://github.com/Denniels/industrial_services_app)
-Sistema de gestión empresarial para servicios industriales
-- 🛡️ 95% cobertura de pruebas
-- 🚀 Stack moderno (Python 3.8+, PostgreSQL)
-- 📱 Interfaz responsive con Streamlit
+### [📚 Curso Git](https://github.com/Denniels/curso_git)
+Curso completo de control de versiones con Git
+- 🌿 Gestión de ramas y flujos de trabajo
+- � Comandos avanzados y buenas prácticas
+- � Colaboración en equipo y resolución de conflictos
+- 🌐 Integración con GitHub y plataformas CI/CD
+- 📝 Ejercicios prácticos y material didáctico
 
-### [DetectaPersonas](https://github.com/Denniels/detecta_personas)
-Sistema de detección de personas en tiempo real
-- 🤖 YOLOv5 para detección
-- 🐳 Containerizado con Docker
-- 🌐 API REST con Flask
+### [🚀 Curso Streamlit](https://github.com/Denniels/curso-streamlit)
+Curso práctico para crear aplicaciones web con Streamlit
+- 📊 Visualización de datos interactiva
+- 🧩 Componentes y widgets personalizados
+- 📱 Diseño responsive y despliegue
+- � Integración con APIs y bases de datos
+- 💻 Proyectos prácticos paso a paso
 
 ### [Fundamentos Data Science](https://github.com/Denniels/Fundamentos-data-sciens)
 Material educativo completo sobre ciencia de datos
