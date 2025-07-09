@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Simple - Agente</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 2rem auto; padding: 2rem; }
+        .test-area { background: #f5f5f5; padding: 1rem; margin: 1rem 0; border-radius: 4px; }
+        button { background: #1a237e; color: white; border: none; padding: 0.5rem 1rem; margin: 0.5rem; border-radius: 4px; }
+        .result { margin-top: 1rem; padding: 1rem; border-radius: 4px; white-space: pre-wrap; }
+        .success { background: #e8f5e8; border: 1px solid #4caf50; }
+        .error { background: #fee; border: 1px solid #f44336; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Simple del Agente</h1>
+    
+    <div class="test-area">
+        <h3>Test 1: Conectividad Básica</h3>
+        <button onclick="testLMStudio()">Probar LM Studio</button>
+        <button onclick="testOllama()">Probar Ollama</button>
+        <div id="connectivity-result" class="result"></div>
+    </div>
+
+    <div class="test-area">
+        <h3>Test 2: Chat Directo</h3>
+        <button onclick="testLMStudioChat()">Chat LM Studio</button>
+        <button onclick="testOllamaChat()">Chat Ollama</button>
+        <div id="chat-result" class="result"></div>
+    </div>
+
+    <div class="test-area">
+        <h3>Test 3: Importar Módulos</h3>
+        <button onclick="testModules()">Probar Imports</button>
+        <div id="modules-result" class="result"></div>
+    </div>
+
+    <script>
+        async function testLMStudio() {
+            const result = document.getElementById('connectivity-result');
+            result.textContent = 'Probando LM Studio...';
+            result.className = 'result';
+
+            try {
+                const response = await fetch('http://localhost:1234/v1/models');
+                if (response.ok) {
+                    const data = await response.json();
+                    result.textContent = `✅ LM Studio OK: ${data.data.length} modelos disponibles`;
+                    result.className = 'result success';
+                } else {
+                    result.textContent = `❌ LM Studio error: ${response.status}`;
+                    result.className = 'result error';
+                }
+            } catch (e) {
+                result.textContent = `❌ Error: ${e.message}`;
+                result.className = 'result error';
+            }
+        }
+
+        async function testOllama() {
+            const result = document.getElementById('connectivity-result');
+            result.textContent = 'Probando Ollama...';
+            result.className = 'result';
+
+            try {
+                const response = await fetch('http://localhost:11434/api/version');
+                if (response.ok) {
+                    const data = await response.json();
+                    result.textContent = `✅ Ollama OK: versión ${data.version}`;
+                    result.className = 'result success';
+                } else {
+                    result.textContent = `❌ Ollama error: ${response.status}`;
+                    result.className = 'result error';
+                }
+            } catch (e) {
+                result.textContent = `❌ Error: ${e.message}`;
+                result.className = 'result error';
+            }
+        }
+
+        async function testLMStudioChat() {
+            const result = document.getElementById('chat-result');
+            result.textContent = 'Enviando mensaje a LM Studio...';
+            result.className = 'result';
+
+            try {
+                const response = await fetch('http://localhost:1234/v1/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: 'phi-3-mini-4k-instruct',
+                        messages: [{ role: 'user', content: 'Responde solo "OK TEST" para confirmar que funcionas.' }],
+                        max_tokens: 10
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const reply = data.choices?.[0]?.message?.content || 'Sin respuesta';
+                    result.textContent = `✅ LM Studio responde: "${reply}"`;
+                    result.className = 'result success';
+                } else {
+                    const errorText = await response.text();
+                    result.textContent = `❌ Error ${response.status}: ${errorText}`;
+                    result.className = 'result error';
+                }
+            } catch (e) {
+                result.textContent = `❌ Error: ${e.message}`;
+                result.className = 'result error';
+            }
+        }
+
+        async function testOllamaChat() {
+            const result = document.getElementById('chat-result');
+            result.textContent = 'Enviando mensaje a Ollama...';
+            result.className = 'result';
+
+            try {
+                const response = await fetch('http://localhost:11434/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: 'llama3.2',
+                        messages: [{ role: 'user', content: 'Responde solo "OK TEST" para confirmar que funcionas.' }],
+                        stream: false
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const reply = data.message?.content || 'Sin respuesta';
+                    result.textContent = `✅ Ollama responde: "${reply}"`;
+                    result.className = 'result success';
+                } else {
+                    const errorText = await response.text();
+                    result.textContent = `❌ Error ${response.status}: ${errorText}`;
+                    result.className = 'result error';
+                }
+            } catch (e) {
+                result.textContent = `❌ Error: ${e.message}`;
+                result.className = 'result error';
+            }
+        }
+
+        async function testModules() {
+            const result = document.getElementById('modules-result');
+            result.textContent = 'Probando importación de módulos...';
+            result.className = 'result';
+
+            try {
+                // Simular la importación de módulos como en la app principal
+                const { setupAPI, getAvailableEndpoints, sendMessageToAgent } = await import('./scripts/api.js');
+                
+                const endpoints = getAvailableEndpoints();
+                result.textContent = `✅ Módulos importados correctamente\nEndpoints disponibles: ${endpoints.map(e => e.name).join(', ')}`;
+                result.className = 'result success';
+
+                // Probar función de envío de mensaje
+                console.log('Probando sendMessageToAgent...');
+                const testReply = await sendMessageToAgent('Test', 0);
+                result.textContent += `\n\nPrueba de sendMessageToAgent: ${testReply}`;
+                
+            } catch (e) {
+                result.textContent = `❌ Error importando módulos: ${e.message}`;
+                result.className = 'result error';
+                console.error('Error importando:', e);
+            }
+        }
+
+        // Ejecutar pruebas automáticamente
+        window.addEventListener('load', () => {
+            console.log('🧪 Test Simple cargado');
+        });
+    </script>
+</body>
+</html>

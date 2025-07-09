@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico de Paquetes - Notebook Architect</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .diagnostic-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+
+        .status.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .status.warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+        }
+
+        .log-output {
+            background: #1e1e1e;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔬 Diagnóstico de Paquetes Python</h1>
+
+        <div class="diagnostic-section">
+            <h3>1. Estado de Pyodide</h3>
+            <div id="pyodide-status" class="status">Verificando...</div>
+            <button class="btn" onclick="initializePyodide()">🔄 Reinicializar Pyodide</button>
+        </div>
+
+        <div class="diagnostic-section">
+            <h3>2. Gestor de Paquetes</h3>
+            <div id="package-manager-status" class="status">Verificando...</div>
+            <button class="btn" onclick="testPackageManager()">🧪 Probar Gestor</button>
+        </div>
+
+        <div class="diagnostic-section">
+            <h3>3. Paquetes Esenciales</h3>
+            <div id="packages-status" class="status">Verificando...</div>
+            <button class="btn" onclick="installEssentialPackages()">📦 Instalar Paquetes</button>
+            <button class="btn" onclick="checkAllPackages()">✅ Verificar Todos</button>
+        </div>
+
+        <div class="diagnostic-section">
+            <h3>4. Dataset Iris (Prueba scikit-learn)</h3>
+            <div id="iris-status" class="status">Esperando...</div>
+            <button class="btn" onclick="testIrisDataset()">🌸 Probar Dataset Iris</button>
+        </div>
+
+        <div class="diagnostic-section">
+            <h3>5. Registro de Actividad</h3>
+            <button class="btn" onclick="clearLogs()">🗑️ Limpiar</button>
+            <div id="log-output" class="log-output"></div>
+        </div>
+    </div>
+
+    <!-- Cargar Pyodide -->
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+    
+    <script type="module">
+        import PackageManager from './scripts/package-manager.js';
+
+        let pyodide = null;
+        let packageManager = null;
+
+        function log(message, type = 'info') {
+            const logOutput = document.getElementById('log-output');
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'warning' ? '⚠️' : type === 'success' ? '✅' : 'ℹ️';
+            logOutput.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+            logOutput.scrollTop = logOutput.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        function updateStatus(elementId, message, type = 'success') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${type}`;
+        }
+
+        async function initializePyodide() {
+            try {
+                updateStatus('pyodide-status', 'Inicializando Pyodide...', 'warning');
+                log('Iniciando carga de Pyodide...');
+
+                pyodide = await loadPyodide({
+                    indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.1/full/"
+                });
+
+                // Configuración básica
+                await pyodide.runPythonAsync(`
+import sys
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')
+print("Configuración básica completada")
+                `);
+
+                packageManager = new PackageManager(pyodide);
+                
+                updateStatus('pyodide-status', 'Pyodide listo ✅', 'success');
+                updateStatus('package-manager-status', 'PackageManager inicializado ✅', 'success');
+                log('Pyodide y PackageManager inicializados correctamente', 'success');
+
+            } catch (error) {
+                updateStatus('pyodide-status', `Error: ${error.message}`, 'error');
+                log(`Error inicializando Pyodide: ${error.message}`, 'error');
+            }
+        }
+
+        async function testPackageManager() {
+            if (!packageManager) {
+                updateStatus('package-manager-status', 'PackageManager no disponible', 'error');
+                return;
+            }
+
+            try {
+                log('Probando funcionalidades del PackageManager...');
+                
+                // Probar verificación de paquete
+                const numpyAvailable = await packageManager.checkPackage('numpy');
+                log(`NumPy disponible: ${numpyAvailable}`, numpyAvailable ? 'success' : 'warning');
+
+                updateStatus('package-manager-status', 'PackageManager funcionando ✅', 'success');
+                
+            } catch (error) {
+                updateStatus('package-manager-status', `Error: ${error.message}`, 'error');
+                log(`Error probando PackageManager: ${error.message}`, 'error');
+            }
+        }
+
+        async function installEssentialPackages() {
+            if (!packageManager) {
+                log('PackageManager no disponible', 'error');
+                return;
+            }
+
+            try {
+                updateStatus('packages-status', 'Instalando paquetes...', 'warning');
+                log('Iniciando instalación de paquetes esenciales...');
+
+                await packageManager.installEssentialPackages();
+                
+                updateStatus('packages-status', 'Paquetes instalados ✅', 'success');
+                log('Paquetes esenciales instalados correctamente', 'success');
+
+            } catch (error) {
+                updateStatus('packages-status', `Error: ${error.message}`, 'error');
+                log(`Error instalando paquetes: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkAllPackages() {
+            if (!packageManager) {
+                log('PackageManager no disponible', 'error');
+                return;
+            }
+
+            const packages = ['numpy', 'pandas', 'matplotlib', 'sklearn', 'seaborn', 'plotly'];
+            let allAvailable = true;
+
+            for (const pkg of packages) {
+                const available = await packageManager.checkPackage(pkg);
+                log(`${pkg}: ${available ? 'disponible' : 'no disponible'}`, available ? 'success' : 'warning');
+                if (!available) allAvailable = false;
+            }
+
+            updateStatus('packages-status', 
+                allAvailable ? 'Todos los paquetes disponibles ✅' : 'Algunos paquetes faltan ⚠️',
+                allAvailable ? 'success' : 'warning'
+            );
+        }
+
+        async function testIrisDataset() {
+            if (!pyodide) {
+                updateStatus('iris-status', 'Pyodide no disponible', 'error');
+                return;
+            }
+
+            try {
+                updateStatus('iris-status', 'Probando dataset Iris...', 'warning');
+                log('Probando carga del dataset Iris...');
+
+                // Asegurar que scikit-learn esté disponible
+                if (packageManager) {
+                    await packageManager.ensurePackage('sklearn');
+                }
+
+                const result = await pyodide.runPythonAsync(`
+try:
+    from sklearn.datasets import load_iris
+    data = load_iris()
+    import pandas as pd
+    df = pd.DataFrame(data.data, columns=data.feature_names)
+    df['species'] = data.target
+    print(f"Dataset Iris cargado: {df.shape[0]} filas, {df.shape[1]} columnas")
+    'success'
+except ImportError as e:
+    print(f"Error importando sklearn: {e}")
+    print("Generando datos sintéticos...")
+    import numpy as np
+    np.random.seed(42)
+    df = pd.DataFrame({
+        'sepal_length': np.random.normal(5.8, 0.8, 150),
+        'sepal_width': np.random.normal(3.0, 0.4, 150),
+        'petal_length': np.random.normal(3.7, 1.7, 150),
+        'petal_width': np.random.normal(1.2, 0.7, 150),
+        'species': np.random.choice([0, 1, 2], 150)
+    })
+    print(f"Dataset sintético creado: {df.shape[0]} filas, {df.shape[1]} columnas")
+    'synthetic'
+except Exception as e:
+    print(f"Error: {e}")
+    'error'
+                `);
+
+                if (result === 'success') {
+                    updateStatus('iris-status', 'Dataset Iris cargado correctamente ✅', 'success');
+                    log('Dataset Iris cargado desde scikit-learn', 'success');
+                } else if (result === 'synthetic') {
+                    updateStatus('iris-status', 'Dataset sintético generado ⚠️', 'warning');
+                    log('Dataset Iris sintético generado (scikit-learn no disponible)', 'warning');
+                } else {
+                    updateStatus('iris-status', 'Error cargando dataset', 'error');
+                    log('Error cargando dataset Iris', 'error');
+                }
+
+            } catch (error) {
+                updateStatus('iris-status', `Error: ${error.message}`, 'error');
+                log(`Error probando dataset Iris: ${error.message}`, 'error');
+            }
+        }
+
+        function clearLogs() {
+            document.getElementById('log-output').textContent = '';
+        }
+
+        // Hacer funciones globales
+        window.initializePyodide = initializePyodide;
+        window.testPackageManager = testPackageManager;
+        window.installEssentialPackages = installEssentialPackages;
+        window.checkAllPackages = checkAllPackages;
+        window.testIrisDataset = testIrisDataset;
+        window.clearLogs = clearLogs;
+
+        // Inicializar automáticamente
+        document.addEventListener('DOMContentLoaded', () => {
+            log('Sistema de diagnóstico iniciado');
+            initializePyodide();
+        });
+    </script>
+</body>
+</html>

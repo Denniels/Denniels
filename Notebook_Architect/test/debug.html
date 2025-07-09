@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug API - Notebook Architect</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: #f5f7fa;
+        }
+        .test-card {
+            background: white;
+            padding: 2rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #1a237e;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0.5rem;
+        }
+        button:hover {
+            background: #3949ab;
+        }
+        .result {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success {
+            border-left: 4px solid #27ae60;
+            background: #f0fff4;
+        }
+        .error {
+            border-left: 4px solid #e74c3c;
+            background: #fff5f5;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Debug API - Notebook Architect</h1>
+    <p>Esta página te ayudará a diagnosticar problemas de conectividad con LM Studio y Ollama.</p>
+
+    <div class="test-card">
+        <h2>🔍 Pruebas de Conectividad</h2>
+        <button onclick="testLMStudio()">Probar LM Studio</button>
+        <button onclick="testOllama()">Probar Ollama</button>
+        <button onclick="testNetwork()">Probar Red Local</button>
+        <div id="connectivity-result" class="result"></div>
+    </div>
+
+    <div class="test-card">
+        <h2>📋 Detección de Modelos</h2>
+        <button onclick="detectLMStudioModels()">Modelos LM Studio</button>
+        <button onclick="detectOllamaModels()">Modelos Ollama</button>
+        <div id="models-result" class="result"></div>
+    </div>
+
+    <div class="test-card">
+        <h2>💬 Prueba de Chat</h2>
+        <button onclick="testLMStudioChat()">Chat LM Studio</button>
+        <button onclick="testOllamaChat()">Chat Ollama</button>
+        <div id="chat-result" class="result"></div>
+    </div>
+
+    <div class="test-card">
+        <h2>🌐 Información del Sistema</h2>
+        <button onclick="showSystemInfo()">Mostrar Info</button>
+        <div id="system-result" class="result"></div>
+    </div>
+
+    <script>
+        async function testLMStudio() {
+            const result = document.getElementById('connectivity-result');
+            result.textContent = 'Probando LM Studio...';
+            result.className = 'result';
+
+            try {
+                console.log('Probando conectividad con LM Studio...');
+                const response = await fetch('http://localhost:1234/v1/models', {
+                    method: 'GET',
+                    signal: AbortSignal.timeout(5000)
+                });
+                
+                if (response.ok) {
+                    result.textContent = `✅ LM Studio conectado (${response.status})`;
+                    result.className = 'result success';
+                } else {
+                    result.textContent = `❌ LM Studio responde pero con error: ${response.status} ${response.statusText}`;
+                    result.className = 'result error';
+                }
+            } catch (e) {
+                result.textContent = `❌ Error conectando a LM Studio: ${e.message}`;
+                result.className = 'result error';
+                console.error('Error LM Studio:', e);
+            }
+        }
+
+        async function testOllama() {
+            const result = document.getElementById('connectivity-result');
+            result.textContent = 'Probando Ollama...';
+            result.className = 'result';
+
+            try {
+                console.log('Probando conectividad con Ollama...');
+                const response = await fetch('http://localhost:11434/api/version', {
+                    method: 'GET',
+                    signal: AbortSignal.timeout(5000)
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    result.textContent = `✅ Ollama conectado (versión: ${data.version || 'desconocida'})`;
+                    result.className = 'result success';
+                } else {
+                    result.textContent = `❌ Ollama responde pero con error: ${response.status} ${response.statusText}`;
+                    result.className = 'result error';
+                }
+            } catch (e) {
+                result.textContent = `❌ Error conectando a Ollama: ${e.message}`;
+                result.className = 'result error';
+                console.error('Error Ollama:', e);
+            }
+        }
+
+        async function testNetwork() {
+            const result = document.getElementById('connectivity-result');
+            result.textContent = 'Probando conectividad de red...';
+            result.className = 'result';
+
+            const tests = [
+                { name: 'LM Studio (puerto 1234)', url: 'http://localhost:1234' },
+                { name: 'Ollama (puerto 11434)', url: 'http://localhost:11434' }
+            ];
+
+            let results = [];
+            for (const test of tests) {
+                try {
+                    const response = await fetch(test.url, {
+                        method: 'GET',
+                        signal: AbortSignal.timeout(3000)
+                    });
+                    results.push(`✅ ${test.name}: Accesible (${response.status})`);
+                } catch (e) {
+                    results.push(`❌ ${test.name}: ${e.message}`);
+                }
+            }
+
+            result.textContent = results.join('\\n');
+            result.className = 'result';
+        }
+
+        async function detectLMStudioModels() {
+            const result = document.getElementById('models-result');
+            result.textContent = 'Detectando modelos de LM Studio...';
+            result.className = 'result';
+
+            try {
+                const response = await fetch('http://localhost:1234/v1/models');
+                if (response.ok) {
+                    const data = await response.json();
+                    const models = data.data || [];
+                    result.textContent = `✅ Modelos encontrados (${models.length}):\\n` + 
+                        models.map(m => `• ${m.id}`).join('\\n');
+                    result.className = 'result success';
+                } else {
+                    result.textContent = `❌ Error al obtener modelos: ${response.status}`;
+                    result.className = 'result error';
+                }
+            } catch (e) {
+                result.textContent = `❌ Error: ${e.message}`;
+                result.className = 'result error';
+            }
+        }
+
+        async function detectOllamaModels() {
+            const result = document.getElementById('models-result');
+            result.textContent = 'Detectando modelos de Ollama...';
+            result.className = 'result';
+
+            try {
+                const response = await fetch('http://localhost:11434/api/tags');
+                if (response.ok) {
+                    const data = await response.json();
+                    const models = data.models || [];
+                    result.textContent = `✅ Modelos encontrados (${models.length}):\\n` + 
+                        models.map(m => `• ${m.name} (${m.size || 'tamaño desconocido'})`).join('\\n');
+                    result.className = 'result success';
+                } else {
+                    result.textContent = `❌ Error al obtener modelos: ${response.status}`;
+                    result.className = 'result error';
+                }
+            } catch (e) {
+                result.textContent = `❌ Error: ${e.message}`;
+                result.className = 'result error';
+            }
+        }
+
+        async function testLMStudioChat() {
+            const result = document.getElementById('chat-result');
+            result.textContent = 'Probando chat con LM Studio...';
+            result.className = 'result';
+
+            try {
+                // Primero obtener el primer modelo disponible
+                const modelsResponse = await fetch('http://localhost:1234/v1/models');
+                let modelId = 'default';
+                
+                if (modelsResponse.ok) {
+                    const modelsData = await modelsResponse.json();
+                    if (modelsData.data && modelsData.data.length > 0) {
+                        modelId = modelsData.data[0].id;
+                    }
+                }
+
+                const response = await fetch('http://localhost:1234/v1/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: modelId,
+                        messages: [{ role: 'user', content: 'Hola, responde solo "OK" para confirmar que funcionas.' }],
+                        max_tokens: 50,
+                        temperature: 0.1
+                    }),
+                    signal: AbortSignal.timeout(30000)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const reply = data.choices?.[0]?.message?.content || 'Sin respuesta';
+                    result.textContent = `✅ LM Studio responde:\\nModelo: ${modelId}\\nRespuesta: ${reply}`;
+                    result.className = 'result success';
+                } else {
+                    const errorText = await response.text();
+                    result.textContent = `❌ Error en chat: ${response.status}\\n${errorText}`;
+                    result.className = 'result error';
+                }
+            } catch (e) {
+                result.textContent = `❌ Error: ${e.message}`;
+                result.className = 'result error';
+            }
+        }
+
+        async function testOllamaChat() {
+            const result = document.getElementById('chat-result');
+            result.textContent = 'Probando chat con Ollama...';
+            result.className = 'result';
+
+            try {
+                // Primero obtener el primer modelo disponible
+                const modelsResponse = await fetch('http://localhost:11434/api/tags');
+                let modelName = 'llama3.2';
+                
+                if (modelsResponse.ok) {
+                    const modelsData = await modelsResponse.json();
+                    if (modelsData.models && modelsData.models.length > 0) {
+                        modelName = modelsData.models[0].name;
+                    }
+                }
+
+                const response = await fetch('http://localhost:11434/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: modelName,
+                        messages: [{ role: 'user', content: 'Hola, responde solo "OK" para confirmar que funcionas.' }],
+                        stream: false
+                    }),
+                    signal: AbortSignal.timeout(30000)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const reply = data.message?.content || 'Sin respuesta';
+                    result.textContent = `✅ Ollama responde:\\nModelo: ${modelName}\\nRespuesta: ${reply}`;
+                    result.className = 'result success';
+                } else {
+                    const errorText = await response.text();
+                    result.textContent = `❌ Error en chat: ${response.status}\\n${errorText}`;
+                    result.className = 'result error';
+                }
+            } catch (e) {
+                result.textContent = `❌ Error: ${e.message}`;
+                result.className = 'result error';
+            }
+        }
+
+        function showSystemInfo() {
+            const result = document.getElementById('system-result');
+            
+            const info = {
+                'User Agent': navigator.userAgent,
+                'Plataforma': navigator.platform,
+                'Idioma': navigator.language,
+                'Cookies habilitadas': navigator.cookieEnabled,
+                'Conexión online': navigator.onLine,
+                'URL actual': window.location.href,
+                'Protocolo': window.location.protocol,
+                'Puerto': window.location.port || '(default)',
+                'Hora local': new Date().toLocaleString()
+            };
+
+            result.textContent = Object.entries(info)
+                .map(([key, value]) => `${key}: ${value}`)
+                .join('\\n');
+            result.className = 'result';
+        }
+
+        // Ejecutar pruebas automáticas al cargar la página
+        window.addEventListener('load', () => {
+            console.log('🔧 Página de debug cargada');
+            showSystemInfo();
+        });
+    </script>
+</body>
+</html>

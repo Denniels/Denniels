@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notebook Architect - Demo Dashboard</title>
+    <style>
+        :root {
+            --primary: #1a237e;
+            --secondary: #3949ab;
+            --accent: #00bcd4;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --error: #f44336;
+            --background: #f5f7fa;
+            --surface: #ffffff;
+            --text: #222b45;
+            --muted: #6b7a99;
+            --border: #e0e3e7;
+            --gradient-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-accent: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        /* Header Hero */
+        .hero-header {
+            background: var(--gradient-bg);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+
+        .hero-features {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            animation: fadeInUp 1s ease-out 0.4s both;
+        }
+
+        .feature-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .feature-badge:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Dashboard Grid */
+        .dashboard-container {
+            max-width: 1400px;
+            margin: -2rem auto 0;
+            padding: 0 2rem 4rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        /* Cards */
+        .demo-card {
+            background: var(--surface);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(26, 35, 126, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+        }
+
+        .demo-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 48px rgba(26, 35, 126, 0.2);
+        }
+
+        .card-header {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            position: relative;
+        }
+
+        .card-header h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-header p {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        /* Code Display */
+        .code-display {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            overflow-x: auto;
+            margin: 1rem 0;
+            border-left: 4px solid var(--accent);
+        }
+
+        .code-display .keyword {
+            color: #569cd6;
+        }
+
+        .code-display .string {
+            color: #ce9178;
+        }
+
+        .code-display .comment {
+            color: #6a9955;
+            font-style: italic;
+        }
+
+        .code-display .function {
+            color: #dcdcaa;
+        }
+
+        /* Interactive Elements */
+        .interactive-demo {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        .demo-button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .demo-button:hover {
+            background: #0097a7;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 188, 212, 0.3);
+        }
+
+        /* Visualization Areas */
+        .viz-container {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            min-height: 200px;
+            border: 2px dashed var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+
+        .viz-container.has-content {
+            border: 2px solid var(--success);
+            background: #f8fff8;
+        }
+
+        .viz-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Stats and Metrics */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--accent) 0%, #0097a7 100%);
+            color: white;
+            border-radius: 12px;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: scale(1.05);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .pulse-animation {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* Output Display */
+        .output-display {
+            background: #f8f9fa;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .output-display.success {
+            border-color: var(--success);
+            background: #f8fff8;
+        }
+
+        .output-display.error {
+            border-color: var(--error);
+            background: #fff8f8;
+            color: var(--error);
+        }
+
+        /* Feature Showcase */
+        .feature-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .feature-item {
+            text-align: center;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .feature-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        }
+
+        .feature-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .feature-description {
+            color: var(--muted);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0, 188, 212, 0.2);
+            border-top: 4px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .hero-features {
+                gap: 1rem;
+            }
+            
+            .feature-badge {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Header -->
+    <header class="hero-header">
+        <div class="hero-content">
+            <h1 class="hero-title">📘 Notebook Architect Web</h1>
+            <p class="hero-subtitle">Plataforma interactiva para análisis de datos con IA integrada</p>
+            <div class="hero-features">
+                <div class="feature-badge">🐍 Python Real</div>
+                <div class="feature-badge">📊 Visualizaciones</div>
+                <div class="feature-badge">🤖 Agente IA</div>
+                <div class="feature-badge">📱 Responsive</div>
+                <div class="feature-badge">⚡ En tiempo real</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Dashboard Container -->
+    <div class="dashboard-container">
+        
+        <!-- Feature Showcase -->
+        <div class="feature-showcase">
+            <div class="feature-item">
+                <div class="feature-icon">🔬</div>
+                <div class="feature-title">Análisis Avanzado</div>
+                <div class="feature-description">Machine Learning, estadísticas y procesamiento de datos con librerías completas</div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">📈</div>
+                <div class="feature-title">Visualizaciones</div>
+                <div class="feature-description">Gráficos estáticos e interactivos con Matplotlib, Plotly y Seaborn</div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">🤖</div>
+                <div class="feature-title">Agente Inteligente</div>
+                <div class="feature-description">Asistente IA que escribe y ejecuta código automáticamente</div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">⚡</div>
+                <div class="feature-title">Ejecución Rápida</div>
+                <div class="feature-description">Python en el navegador con Pyodide, sin necesidad de servidor</div>
+            </div>
+        </div>
+
+        <!-- Demo Grid -->
+        <div class="dashboard-grid">
+            
+            <!-- Demo 1: Análisis de Datos -->
+            <div class="demo-card" data-demo="data-analysis">
+                <div class="card-header">
+                    <h3>📊 Análisis de Datos Automático</h3>
+                    <p>Carga y analiza datasets con un solo clic</p>
+                </div>
+                <div class="card-content">
+                    <div class="code-display" id="code-data-analysis">
+<span class="comment"># Cargar dataset de ejemplo</span>
+<span class="keyword">import</span> pandas <span class="keyword">as</span> pd
+<span class="keyword">import</span> numpy <span class="keyword">as</span> np
+
+<span class="comment"># Dataset Iris para clasificación</span>
+df = <span class="function">load_sample_data</span>(<span class="string">'iris'</span>)
+<span class="function">describe_dataset</span>(df)
+<span class="function">quick_viz</span>(df)
+                    </div>
+                    <div class="interactive-demo">
+                        <button class="demo-button" onclick="runDataAnalysis()">🚀 Ejecutar Análisis</button>
+                        <button class="demo-button" onclick="loadDifferentDataset()">🔄 Cambiar Dataset</button>
+                    </div>
+                    <div class="output-display" id="output-data-analysis">Haz clic en "Ejecutar Análisis" para ver los resultados...</div>
+                    <div class="viz-container" id="viz-data-analysis">
+                        <div>📈 Las visualizaciones aparecerán aquí</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Demo 2: Machine Learning -->
+            <div class="demo-card" data-demo="machine-learning">
+                <div class="card-header">
+                    <h3>🤖 Machine Learning Instantáneo</h3>
+                    <p>Entrena modelos con algoritmos avanzados</p>
+                </div>
+                <div class="card-content">
+                    <div class="code-display" id="code-ml">
+<span class="comment"># Modelo de clasificación automático</span>
+<span class="keyword">from</span> sklearn.ensemble <span class="keyword">import</span> RandomForestClassifier
+<span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> classification_report
+
+<span class="comment"># Cargar datos y entrenar modelo</span>
+df = <span class="function">load_sample_data</span>(<span class="string">'iris'</span>)
+model = <span class="function">quick_model</span>(df, <span class="string">'species'</span>, <span class="string">'classification'</span>)
+                    </div>
+                    <div class="stats-grid" id="ml-stats">
+                        <div class="stat-item">
+                            <div class="stat-number" id="accuracy">--</div>
+                            <div class="stat-label">Precisión</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="features">--</div>
+                            <div class="stat-label">Características</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="samples">--</div>
+                            <div class="stat-label">Muestras</div>
+                        </div>
+                    </div>
+                    <div class="interactive-demo">
+                        <button class="demo-button" onclick="runMLDemo()">🎯 Entrenar Modelo</button>
+                        <button class="demo-button" onclick="showFeatureImportance()">📋 Importancia</button>
+                    </div>
+                    <div class="output-display" id="output-ml">Entrena un modelo para ver las métricas...</div>
+                </div>
+            </div>
+
+            <!-- Demo 3: Visualizaciones Interactivas -->
+            <div class="demo-card" data-demo="interactive-viz">
+                <div class="card-header">
+                    <h3>🎨 Visualizaciones Interactivas</h3>
+                    <p>Gráficos dinámicos con Plotly y Matplotlib</p>
+                </div>
+                <div class="card-content">
+                    <div class="code-display" id="code-viz">
+<span class="comment"># Crear visualizaciones interactivas</span>
+<span class="keyword">import</span> plotly.express <span class="keyword">as</span> px
+<span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt
+
+<span class="comment"># Dashboard automático</span>
+df = <span class="function">load_sample_data</span>(<span class="string">'sales'</span>)
+<span class="function">create_dashboard</span>(df, <span class="string">'Dashboard de Ventas'</span>)
+
+<span class="comment"># Gráfico interactivo Plotly</span>
+fig = px.<span class="function">scatter</span>(df, x=<span class="string">'sales'</span>, y=<span class="string">'revenue'</span>, 
+                 color=<span class="string">'region'</span>, size=<span class="string">'price'</span>)
+fig.<span class="function">show</span>()
+                    </div>
+                    <div class="interactive-demo">
+                        <button class="demo-button" onclick="createDashboard()">📊 Dashboard</button>
+                        <button class="demo-button" onclick="createPlotlyChart()">📈 Plotly</button>
+                        <button class="demo-button" onclick="createMatplotlibChart()">🎨 Matplotlib</button>
+                    </div>
+                    <div class="viz-container" id="viz-interactive">
+                        <div class="spinner" id="viz-spinner" style="display: none;"></div>
+                        <div id="viz-content">🎨 Selecciona un tipo de visualización</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Demo 4: Agente Inteligente -->
+            <div class="demo-card" data-demo="ai-agent">
+                <div class="card-header">
+                    <h3>🧠 Agente Inteligente</h3>
+                    <p>IA que escribe y ejecuta código automáticamente</p>
+                </div>
+                <div class="card-content">
+                    <div class="interactive-demo">
+                        <h4 style="margin-bottom: 1rem; color: white;">💬 Prueba estos comandos:</h4>
+                        <button class="demo-button" onclick="askAgent('Analiza el dataset de ventas y muestra un resumen')">💼 Analizar Ventas</button>
+                        <button class="demo-button" onclick="askAgent('Crea un gráfico de correlación del dataset iris')">🌸 Gráfico Iris</button>
+                        <button class="demo-button" onclick="askAgent('Entrena un modelo predictivo con datos de acciones')">📈 Modelo Stocks</button>
+                    </div>
+                    <div class="code-display" id="agent-generated-code">
+<span class="comment"># El agente generará código aquí automáticamente</span>
+<span class="comment"># Basado en tus instrucciones en lenguaje natural</span>
+
+<span class="keyword">def</span> <span class="function">agent_analysis</span>():
+    <span class="comment"># Código inteligente generado por IA</span>
+    <span class="keyword">return</span> <span class="string">"Esperando instrucciones..."</span>
+                    </div>
+                    <div class="output-display" id="agent-output">🤖 El agente está listo. Haz clic en un comando para comenzar...</div>
+                    <div class="viz-container" id="agent-viz">
+                        <div>🧠 Las visualizaciones del agente aparecerán aquí</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Demo 5: Datasets y Utilidades -->
+            <div class="demo-card" data-demo="datasets">
+                <div class="card-header">
+                    <h3>📚 Datasets y Utilidades</h3>
+                    <p>Colección de datos listos para análisis</p>
+                </div>
+                <div class="card-content">
+                    <div class="feature-showcase" style="grid-template-columns: repeat(2, 1fr); gap: 1rem; margin: 0;">
+                        <div class="feature-item" onclick="loadDatasetDemo('iris')" style="cursor: pointer;">
+                            <div class="feature-icon">🌸</div>
+                            <div class="feature-title">Iris</div>
+                            <div class="feature-description">Clasificación de flores</div>
+                        </div>
+                        <div class="feature-item" onclick="loadDatasetDemo('sales')" style="cursor: pointer;">
+                            <div class="feature-icon">💰</div>
+                            <div class="feature-title">Ventas</div>
+                            <div class="feature-description">Análisis comercial</div>
+                        </div>
+                        <div class="feature-item" onclick="loadDatasetDemo('stocks')" style="cursor: pointer;">
+                            <div class="feature-icon">📈</div>
+                            <div class="feature-title">Stocks</div>
+                            <div class="feature-description">Mercado financiero</div>
+                        </div>
+                        <div class="feature-item" onclick="loadDatasetDemo('titanic')" style="cursor: pointer;">
+                            <div class="feature-icon">🚢</div>
+                            <div class="feature-title">Titanic</div>
+                            <div class="feature-description">Análisis supervivencia</div>
+                        </div>
+                    </div>
+                    <div class="code-display" id="dataset-code">
+<span class="comment"># Cargar cualquier dataset de ejemplo</span>
+datasets = [<span class="string">'iris'</span>, <span class="string">'sales'</span>, <span class="string">'stocks'</span>, <span class="string">'titanic'</span>, <span class="string">'wine'</span>]
+
+<span class="keyword">for</span> dataset <span class="keyword">in</span> datasets:
+    df = <span class="function">load_sample_data</span>(dataset)
+    <span class="function">print</span>(<span class="string">f"Dataset {dataset}: {df.shape}"</span>)
+                    </div>
+                    <div class="output-display" id="dataset-output">Selecciona un dataset para ver sus características...</div>
+                </div>
+            </div>
+
+            <!-- Demo 6: Exportación y Compatibilidad -->
+            <div class="demo-card" data-demo="export">
+                <div class="card-header">
+                    <h3>💾 Exportación y Formatos</h3>
+                    <p>Múltiples formatos de salida</p>
+                </div>
+                <div class="card-content">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number">📄</div>
+                            <div class="stat-label">CSV</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">🌐</div>
+                            <div class="stat-label">JSON</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">📋</div>
+                            <div class="stat-label">HTML</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">📊</div>
+                            <div class="stat-label">Excel</div>
+                        </div>
+                    </div>
+                    <div class="code-display">
+<span class="comment"># Exportar en múltiples formatos</span>
+df = <span class="function">load_sample_data</span>(<span class="string">'iris'</span>)
+
+<span class="comment"># Exportar a diferentes formatos</span>
+csv_data = <span class="function">export_data</span>(df, <span class="string">'iris.csv'</span>, <span class="string">'csv'</span>)
+json_data = <span class="function">export_data</span>(df, <span class="string">'iris.json'</span>, <span class="string">'json'</span>)
+html_table = <span class="function">export_data</span>(df, <span class="string">'iris.html'</span>, <span class="string">'html'</span>)
+                    </div>
+                    <div class="interactive-demo">
+                        <button class="demo-button" onclick="exportDemo('csv')">📄 CSV</button>
+                        <button class="demo-button" onclick="exportDemo('json')">🌐 JSON</button>
+                        <button class="demo-button" onclick="exportDemo('html')">📋 HTML</button>
+                    </div>
+                    <div class="output-display" id="export-output">Selecciona un formato para ver el resultado...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulación de funcionalidades para la demo
+        let currentDataset = 'iris';
+        let demoResults = {
+            datasets: {
+                iris: { shape: [150, 5], description: 'Clasificación de especies de iris', accuracy: '96.7%' },
+                sales: { shape: [730, 8], description: 'Datos de ventas comerciales', accuracy: '89.2%' },
+                stocks: { shape: [1460, 5], description: 'Precios de acciones históricas', accuracy: '78.5%' },
+                titanic: { shape: [891, 12], description: 'Supervivencia del Titanic', accuracy: '82.3%' },
+                wine: { shape: [178, 14], description: 'Clasificación de vinos', accuracy: '94.1%' }
+            }
+        };
+
+        // Simulación de ejecución de análisis de datos
+        function runDataAnalysis() {
+            const output = document.getElementById('output-data-analysis');
+            const viz = document.getElementById('viz-data-analysis');
+            
+            output.className = 'output-display';
+            output.textContent = 'Ejecutando análisis...';
+            
+            setTimeout(() => {
+                const dataset = demoResults.datasets[currentDataset];
+                output.className = 'output-display success';
+                output.textContent = `📊 RESUMEN DEL DATASET\n` +
+                    `==========================================\n` +
+                    `📏 Dimensiones: ${dataset.shape[0]} filas × ${dataset.shape[1]} columnas\n` +
+                    `📋 Descripción: ${dataset.description}\n` +
+                    `✅ Análisis completado exitosamente\n\n` +
+                    `📈 ESTADÍSTICAS PRINCIPALES:\n` +
+                    `• Variables numéricas: ${Math.floor(dataset.shape[1] * 0.7)}\n` +
+                    `• Variables categóricas: ${Math.ceil(dataset.shape[1] * 0.3)}\n` +
+                    `• Valores faltantes: 0\n` +
+                    `• Duplicados: 0`;
+                
+                viz.className = 'viz-container has-content';
+                viz.innerHTML = generateMockVisualization('histogram');
+            }, 1500);
+        }
+
+        // Cambiar dataset
+        function loadDifferentDataset() {
+            const datasets = ['iris', 'sales', 'stocks', 'titanic', 'wine'];
+            const currentIndex = datasets.indexOf(currentDataset);
+            currentDataset = datasets[(currentIndex + 1) % datasets.length];
+            
+            const code = document.getElementById('code-data-analysis');
+            code.innerHTML = code.innerHTML.replace(
+                /load_sample_data\('.*?'\)/,
+                `<span class="function">load_sample_data</span>(<span class="string">'${currentDataset}'</span>)`
+            );
+            
+            document.getElementById('output-data-analysis').textContent = `Cambiado a dataset: ${currentDataset}. Haz clic en "Ejecutar Análisis" para ver los resultados...`;
+        }
+
+        // Simulación de Machine Learning
+        function runMLDemo() {
+            const output = document.getElementById('output-ml');
+            const accuracyEl = document.getElementById('accuracy');
+            const featuresEl = document.getElementById('features');
+            const samplesEl = document.getElementById('samples');
+            
+            output.textContent = 'Entrenando modelo...';
+            accuracyEl.textContent = '--';
+            featuresEl.textContent = '--';
+            samplesEl.textContent = '--';
+            
+            setTimeout(() => {
+                const dataset = demoResults.datasets[currentDataset];
+                const accuracy = dataset.accuracy;
+                
+                accuracyEl.textContent = accuracy;
+                featuresEl.textContent = dataset.shape[1] - 1;
+                samplesEl.textContent = dataset.shape[0];
+                
+                output.className = 'output-display success';
+                output.textContent = `🤖 MODELO DE MACHINE LEARNING\n` +
+                    `=====================================\n` +
+                    `✅ Modelo entrenado exitosamente\n` +
+                    `📊 Algoritmo: Random Forest\n` +
+                    `🎯 Precisión: ${accuracy}\n` +
+                    `📋 Características: ${dataset.shape[1] - 1}\n` +
+                    `📈 Muestras de entrenamiento: ${Math.floor(dataset.shape[0] * 0.8)}\n` +
+                    `🧪 Muestras de prueba: ${Math.floor(dataset.shape[0] * 0.2)}\n\n` +
+                    `Top características importantes:\n` +
+                    `• Feature_1: 0.287\n` +
+                    `• Feature_2: 0.254\n` +
+                    `• Feature_3: 0.189`;
+            }, 2000);
+        }
+
+        // Mostrar importancia de características
+        function showFeatureImportance() {
+            const output = document.getElementById('output-ml');
+            output.className = 'output-display';
+            output.textContent = `🔍 IMPORTANCIA DE CARACTERÍSTICAS\n` +
+                `=====================================\n` +
+                `1. Sepal Length: 0.287 (28.7%)\n` +
+                `2. Petal Length: 0.254 (25.4%)\n` +
+                `3. Petal Width: 0.189 (18.9%)\n` +
+                `4. Sepal Width: 0.156 (15.6%)\n` +
+                `5. Other Features: 0.114 (11.4%)\n\n` +
+                `📊 Las dos primeras características explican\n` +
+                `    el 54.1% de la varianza del modelo.`;
+        }
+
+        // Crear dashboard
+        function createDashboard() {
+            const viz = document.getElementById('viz-interactive');
+            const spinner = document.getElementById('viz-spinner');
+            const content = document.getElementById('viz-content');
+            
+            spinner.style.display = 'block';
+            content.textContent = 'Generando dashboard...';
+            
+            setTimeout(() => {
+                spinner.style.display = 'none';
+                viz.className = 'viz-container has-content';
+                viz.innerHTML = generateMockVisualization('dashboard');
+            }, 1500);
+        }
+
+        // Crear gráfico Plotly
+        function createPlotlyChart() {
+            const viz = document.getElementById('viz-interactive');
+            const spinner = document.getElementById('viz-spinner');
+            
+            spinner.style.display = 'block';
+            
+            setTimeout(() => {
+                spinner.style.display = 'none';
+                viz.className = 'viz-container has-content';
+                viz.innerHTML = generateMockVisualization('plotly');
+            }, 1000);
+        }
+
+        // Crear gráfico Matplotlib
+        function createMatplotlibChart() {
+            const viz = document.getElementById('viz-interactive');
+            const spinner = document.getElementById('viz-spinner');
+            
+            spinner.style.display = 'block';
+            
+            setTimeout(() => {
+                spinner.style.display = 'none';
+                viz.className = 'viz-container has-content';
+                viz.innerHTML = generateMockVisualization('matplotlib');
+            }, 1200);
+        }
+
+        // Interacción con agente
+        function askAgent(question) {
+            const codeEl = document.getElementById('agent-generated-code');
+            const outputEl = document.getElementById('agent-output');
+            const vizEl = document.getElementById('agent-viz');
+            
+            outputEl.textContent = `🤖 Agente: "${question}"\n\nGenerando código...`;
+            
+            setTimeout(() => {
+                // Generar código basado en la pregunta
+                let generatedCode = '';
+                if (question.includes('ventas')) {
+                    generatedCode = `<span class="comment"># Análisis automático de ventas generado por IA</span>
+<span class="keyword">import</span> pandas <span class="keyword">as</span> pd
+<span class="keyword">import</span> plotly.express <span class="keyword">as</span> px
+
+<span class="comment"># Cargar y analizar datos de ventas</span>
+df = <span class="function">load_sample_data</span>(<span class="string">'sales'</span>)
+<span class="function">describe_dataset</span>(df)
+
+<span class="comment"># Análisis de tendencias</span>
+monthly_sales = df.<span class="function">groupby</span>(df[<span class="string">'date'</span>].<span class="function">dt</span>.<span class="function">month</span>)[<span class="string">'revenue'</span>].<span class="function">sum</span>()
+<span class="function">print</span>(<span class="string">"💰 Ingresos por mes:"</span>)
+<span class="function">print</span>(monthly_sales)`;
+                } else if (question.includes('iris')) {
+                    generatedCode = `<span class="comment"># Gráfico de correlación Iris generado por IA</span>
+<span class="keyword">import</span> seaborn <span class="keyword">as</span> sns
+<span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt
+
+<span class="comment"># Cargar dataset Iris</span>
+df = <span class="function">load_sample_data</span>(<span class="string">'iris'</span>)
+
+<span class="comment"># Matriz de correlación</span>
+numeric_df = df.<span class="function">select_dtypes</span>(include=[<span class="string">'number'</span>])
+corr_matrix = numeric_df.<span class="function">corr</span>()
+
+<span class="comment"># Crear heatmap</span>
+plt.<span class="function">figure</span>(figsize=(10, 8))
+sns.<span class="function">heatmap</span>(corr_matrix, annot=<span class="keyword">True</span>, cmap=<span class="string">'coolwarm'</span>)
+plt.<span class="function">title</span>(<span class="string">'🌸 Correlación - Dataset Iris'</span>)
+plt.<span class="function">show</span>()`;
+                } else {
+                    generatedCode = `<span class="comment"># Modelo predictivo para acciones generado por IA</span>
+<span class="keyword">from</span> sklearn.ensemble <span class="keyword">import</span> RandomForestRegressor
+<span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> mean_squared_error
+
+<span class="comment"># Cargar datos de acciones</span>
+df = <span class="function">load_sample_data</span>(<span class="string">'stocks'</span>)
+
+<span class="comment"># Preparar características para predicción</span>
+df[<span class="string">'price_lag1'</span>] = df.<span class="function">groupby</span>(<span class="string">'symbol'</span>)[<span class="string">'price'</span>].<span class="function">shift</span>(1)
+df[<span class="string">'volume_avg'</span>] = df.<span class="function">groupby</span>(<span class="string">'symbol'</span>)[<span class="string">'volume'</span>].<span class="function">rolling</span>(5).<span class="function">mean</span>()
+
+<span class="comment"># Entrenar modelo predictivo</span>
+model = <span class="function">quick_model</span>(df, <span class="string">'price'</span>, <span class="string">'regression'</span>)`;
+                }
+                
+                codeEl.innerHTML = generatedCode;
+                
+                setTimeout(() => {
+                    outputEl.className = 'output-display success';
+                    outputEl.textContent = `✅ Código generado y ejecutado\n\n📊 Resultados:\n• Dataset cargado exitosamente\n• Análisis completado\n• Visualización generada\n\n🤖 El agente ha procesado tu solicitud y generado el código correspondiente.`;
+                    
+                    vizEl.className = 'viz-container has-content';
+                    vizEl.innerHTML = generateMockVisualization('agent');
+                }, 1000);
+            }, 1500);
+        }
+
+        // Cargar demo de dataset
+        function loadDatasetDemo(datasetName) {
+            const codeEl = document.getElementById('dataset-code');
+            const outputEl = document.getElementById('dataset-output');
+            
+            const dataset = demoResults.datasets[datasetName];
+            
+            codeEl.innerHTML = `<span class="comment"># Dataset seleccionado: ${datasetName}</span>
+df = <span class="function">load_sample_data</span>(<span class="string">'${datasetName}'</span>)
+<span class="function">print</span>(<span class="string">f"Forma: {df.shape}"</span>)
+<span class="function">print</span>(<span class="string">f"Columnas: {list(df.columns)}"</span>)
+<span class="function">describe_dataset</span>(df)`;
+            
+            outputEl.className = 'output-display success';
+            outputEl.textContent = `📊 Dataset: ${datasetName.toUpperCase()}\n` +
+                `==========================\n` +
+                `📏 Dimensiones: ${dataset.shape[0]} filas × ${dataset.shape[1]} columnas\n` +
+                `📋 Descripción: ${dataset.description}\n` +
+                `🎯 Precisión típica: ${dataset.accuracy}\n\n` +
+                `✅ Dataset cargado exitosamente\n` +
+                `🔍 Listo para análisis y visualización`;
+        }
+
+        // Demo de exportación
+        function exportDemo(format) {
+            const outputEl = document.getElementById('export-output');
+            
+            outputEl.textContent = `Exportando en formato ${format.toUpperCase()}...`;
+            
+            setTimeout(() => {
+                let sampleData = '';
+                if (format === 'csv') {
+                    sampleData = `sepal_length,sepal_width,petal_length,petal_width,species
+5.1,3.5,1.4,0.2,setosa
+4.9,3.0,1.4,0.2,setosa
+4.7,3.2,1.3,0.2,setosa
+...150 filas más`;
+                } else if (format === 'json') {
+                    sampleData = `[
+  {
+    "sepal_length": 5.1,
+    "sepal_width": 3.5,
+    "petal_length": 1.4,
+    "petal_width": 0.2,
+    "species": "setosa"
+  },
+  ...
+]`;
+                } else if (format === 'html') {
+                    sampleData = `<table class="table table-striped">
+  <thead>
+    <tr><th>Sepal Length</th><th>Species</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>5.1</td><td>setosa</td></tr>
+    ...
+  </tbody>
+</table>`;
+                }
+                
+                outputEl.className = 'output-display success';
+                outputEl.textContent = `✅ Exportación ${format.toUpperCase()} completada\n\n📄 Muestra del archivo:\n${sampleData}`;
+            }, 800);
+        }
+
+        // Generar visualizaciones mock
+        function generateMockVisualization(type) {
+            const colors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'];
+            
+            if (type === 'histogram') {
+                return `<div style="background: linear-gradient(135deg, ${colors[0]}, ${colors[1]}); color: white; padding: 2rem; border-radius: 8px; text-align: center;">
+                    <h3>📊 Histograma de Distribución</h3>
+                    <div style="display: flex; justify-content: space-around; align-items: end; height: 100px; margin: 1rem 0;">
+                        <div style="background: rgba(255,255,255,0.3); width: 30px; height: 80%; border-radius: 4px;"></div>
+                        <div style="background: rgba(255,255,255,0.3); width: 30px; height: 60%; border-radius: 4px;"></div>
+                        <div style="background: rgba(255,255,255,0.3); width: 30px; height: 90%; border-radius: 4px;"></div>
+                        <div style="background: rgba(255,255,255,0.3); width: 30px; height: 70%; border-radius: 4px;"></div>
+                        <div style="background: rgba(255,255,255,0.3); width: 30px; height: 85%; border-radius: 4px;"></div>
+                    </div>
+                    <p>Distribución normal detectada ✅</p>
+                </div>`;
+            } else if (type === 'dashboard') {
+                return `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 1rem;">
+                    <div style="background: ${colors[0]}; color: white; padding: 1rem; border-radius: 8px; text-align: center;">
+                        <h4>📈 Tendencia</h4>
+                        <div style="font-size: 2rem; margin: 0.5rem 0;">↗️</div>
+                        <p>+15.3%</p>
+                    </div>
+                    <div style="background: ${colors[2]}; color: white; padding: 1rem; border-radius: 8px; text-align: center;">
+                        <h4>💰 Ingresos</h4>
+                        <div style="font-size: 2rem; margin: 0.5rem 0;">💎</div>
+                        <p>$145.2K</p>
+                    </div>
+                    <div style="background: ${colors[4]}; color: white; padding: 1rem; border-radius: 8px; text-align: center; grid-column: 1 / -1;">
+                        <h4>📊 Dashboard Interactivo</h4>
+                        <p>6 visualizaciones generadas automáticamente</p>
+                    </div>
+                </div>`;
+            } else if (type === 'plotly') {
+                return `<div style="background: linear-gradient(135deg, ${colors[4]}, ${colors[5]}); color: white; padding: 2rem; border-radius: 8px; text-align: center;">
+                    <h3>📈 Gráfico Plotly Interactivo</h3>
+                    <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                        <div style="display: flex; justify-content: space-around; align-items: center; height: 80px;">
+                            <div style="width: 20px; height: 20px; background: #ff6b6b; border-radius: 50%; animation: pulse 2s infinite;"></div>
+                            <div style="width: 20px; height: 20px; background: #4ecdc4; border-radius: 50%; animation: pulse 2s infinite 0.5s;"></div>
+                            <div style="width: 20px; height: 20px; background: #45b7d1; border-radius: 50%; animation: pulse 2s infinite 1s;"></div>
+                            <div style="width: 20px; height: 20px; background: #f9ca24; border-radius: 50%; animation: pulse 2s infinite 1.5s;"></div>
+                        </div>
+                    </div>
+                    <p>✨ Interactivo • Zoom • Hover • Filtros</p>
+                </div>`;
+            } else if (type === 'matplotlib') {
+                return `<div style="background: linear-gradient(135deg, ${colors[2]}, ${colors[3]}); color: white; padding: 2rem; border-radius: 8px; text-align: center;">
+                    <h3>🎨 Gráfico Matplotlib</h3>
+                    <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 8px; margin: 1rem 0; position: relative;">
+                        <svg width="200" height="80" style="margin: auto;">
+                            <path d="M 10 70 Q 50 20 100 40 T 190 30" stroke="rgba(255,255,255,0.8)" stroke-width="3" fill="none"/>
+                            <circle cx="10" cy="70" r="3" fill="white"/>
+                            <circle cx="100" cy="40" r="3" fill="white"/>
+                            <circle cx="190" cy="30" r="3" fill="white"/>
+                        </svg>
+                    </div>
+                    <p>📊 Alta calidad • Publicación • Personalizable</p>
+                </div>`;
+            } else {
+                return `<div style="background: linear-gradient(135deg, ${colors[1]}, ${colors[0]}); color: white; padding: 2rem; border-radius: 8px; text-align: center;">
+                    <h3>🧠 Análisis del Agente</h3>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1rem 0;">
+                        <div style="background: rgba(255,255,255,0.2); padding: 0.5rem; border-radius: 4px;">
+                            <div style="font-size: 1.5rem;">📊</div>
+                            <small>Datos</small>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.2); padding: 0.5rem; border-radius: 4px;">
+                            <div style="font-size: 1.5rem;">🤖</div>
+                            <small>IA</small>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.2); padding: 0.5rem; border-radius: 4px;">
+                            <div style="font-size: 1.5rem;">✨</div>
+                            <small>Resultado</small>
+                        </div>
+                    </div>
+                    <p>Análisis inteligente completado</p>
+                </div>`;
+            }
+        }
+
+        // Animaciones de entrada
+        function animateOnScroll() {
+            const cards = document.querySelectorAll('.demo-card');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry, index) => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => {
+                            entry.target.style.animation = 'fadeInUp 0.6s ease-out both';
+                        }, index * 100);
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            cards.forEach(card => observer.observe(card));
+        }
+
+        // Inicializar animaciones
+        document.addEventListener('DOMContentLoaded', () => {
+            animateOnScroll();
+            
+            // Efecto de typing en el hero
+            const heroTitle = document.querySelector('.hero-title');
+            const text = heroTitle.textContent;
+            heroTitle.textContent = '';
+            let i = 0;
+            
+            function typeWriter() {
+                if (i < text.length) {
+                    heroTitle.textContent += text.charAt(i);
+                    i++;
+                    setTimeout(typeWriter, 100);
+                }
+            }
+            
+            setTimeout(typeWriter, 500);
+        });
+    </script>
+</body>
+</html>

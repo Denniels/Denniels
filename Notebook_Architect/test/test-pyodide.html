@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notebook Architect - Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0a0e1a;
+            color: white;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+        .status {
+            background: #1e1e2e;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 4px solid #00bcd4;
+        }
+        .error {
+            border-left-color: #f44336;
+            background: rgba(244, 67, 54, 0.1);
+        }
+        .success {
+            border-left-color: #4caf50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+        button {
+            background: #00bcd4;
+            border: none;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 0.5rem;
+        }
+        button:hover {
+            background: #0097a7;
+        }
+        #output {
+            background: #1e1e2e;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Notebook Architect - Test de Conectividad</h1>
+    
+    <div class="status">
+        <h3>Estado de Pyodide</h3>
+        <div id="pyodide-status">Verificando...</div>
+    </div>
+    
+    <button onclick="testPyodideLoad()">🔄 Probar Cargar Pyodide</button>
+    <button onclick="testAlternativeCDN()">🌐 Probar CDN Alternativo</button>
+    <button onclick="testConnectivity()">📡 Test de Conectividad</button>
+    
+    <div id="output"></div>
+    
+    <script>
+        const output = document.getElementById('output');
+        const status = document.getElementById('pyodide-status');
+        
+        function log(message) {
+            console.log(message);
+            output.textContent += new Date().toLocaleTimeString() + ' - ' + message + '\n';
+        }
+        
+        function updateStatus(message, type = 'status') {
+            status.innerHTML = message;
+            status.className = type;
+        }
+        
+        async function testConnectivity() {
+            log('🌐 Probando conectividad a internet...');
+            
+            try {
+                const response = await fetch('https://httpbin.org/get', { method: 'HEAD' });
+                if (response.ok) {
+                    log('✅ Conectividad a internet: OK');
+                    return true;
+                } else {
+                    log('❌ Problema de conectividad');
+                    return false;
+                }
+            } catch (error) {
+                log('❌ Sin conexión a internet: ' + error.message);
+                return false;
+            }
+        }
+        
+        async function testPyodideLoad() {
+            log('🐍 Probando cargar Pyodide v0.24.1...');
+            updateStatus('Cargando Pyodide...', 'status');
+            
+            try {
+                // Intentar cargar el script
+                const script = document.createElement('script');
+                script.src = 'https://cdn.pyodide.org/v0.24.1/full/pyodide.js';
+                
+                const loadPromise = new Promise((resolve, reject) => {
+                    script.onload = resolve;
+                    script.onerror = reject;
+                    setTimeout(() => reject(new Error('Timeout cargando Pyodide')), 30000);
+                });
+                
+                document.head.appendChild(script);
+                await loadPromise;
+                
+                log('✅ Script de Pyodide cargado');
+                
+                // Intentar inicializar
+                if (typeof loadPyodide !== 'undefined') {
+                    log('🔄 Inicializando Pyodide...');
+                    const pyodide = await loadPyodide();
+                    log('✅ Pyodide inicializado correctamente');
+                    updateStatus('✅ Pyodide funcionando correctamente', 'success');
+                    
+                    // Probar ejecutar código simple
+                    const result = pyodide.runPython('2 + 2');
+                    log('🧮 Prueba de código: 2 + 2 = ' + result);
+                    
+                } else {
+                    throw new Error('loadPyodide no está disponible');
+                }
+                
+            } catch (error) {
+                log('❌ Error cargando Pyodide: ' + error.message);
+                updateStatus('❌ Error: ' + error.message, 'error');
+            }
+        }
+        
+        async function testAlternativeCDN() {
+            log('🔄 Probando CDN alternativo de Pyodide...');
+            
+            // Limpiar scripts anteriores
+            const oldScripts = document.querySelectorAll('script[src*="pyodide"]');
+            oldScripts.forEach(script => script.remove());
+            
+            try {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js';
+                
+                const loadPromise = new Promise((resolve, reject) => {
+                    script.onload = resolve;
+                    script.onerror = reject;
+                    setTimeout(() => reject(new Error('Timeout')), 20000);
+                });
+                
+                document.head.appendChild(script);
+                await loadPromise;
+                
+                log('✅ CDN alternativo funcionando');
+                
+                if (typeof loadPyodide !== 'undefined') {
+                    const pyodide = await loadPyodide();
+                    log('✅ Pyodide cargado desde CDN alternativo');
+                    updateStatus('✅ CDN alternativo funciona', 'success');
+                }
+                
+            } catch (error) {
+                log('❌ CDN alternativo falló: ' + error.message);
+                updateStatus('❌ CDN alternativo falló', 'error');
+            }
+        }
+        
+        // Auto-test al cargar
+        document.addEventListener('DOMContentLoaded', () => {
+            log('🚀 Iniciando tests automáticos...');
+            testConnectivity().then(connected => {
+                if (connected) {
+                    setTimeout(testPyodideLoad, 1000);
+                } else {
+                    log('⚠️ Sin conexión - tests limitados');
+                    updateStatus('⚠️ Sin conexión a internet', 'error');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notebook Architect - Versión Simplificada</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0a0e1a;
+            color: white;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        .panel {
+            background: #1e1e2e;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #2a2d47;
+        }
+        .panel h3 {
+            color: #00bcd4;
+            margin-bottom: 1rem;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            background: #0f0f1a;
+            border: 1px solid #2a2d47;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+        }
+        button {
+            background: #00bcd4;
+            border: none;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 0.5rem 0.5rem 0 0;
+        }
+        button:hover {
+            background: #0097a7;
+        }
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        .status {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 4px solid #00bcd4;
+            background: rgba(0, 188, 212, 0.1);
+        }
+        .error {
+            border-left-color: #f44336;
+            background: rgba(244, 67, 54, 0.1);
+        }
+        .success {
+            border-left-color: #4caf50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+        #output {
+            background: #0f0f1a;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #00bcd4;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Notebook Architect - Simple</h1>
+    
+    <div class="status" id="status">
+        <div id="status-text">🔄 Inicializando Python...</div>
+    </div>
+    
+    <div class="container">
+        <div class="panel">
+            <h3>🐍 Editor Python</h3>
+            <textarea id="code-editor" placeholder="# Escribe código Python aquí...
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Crear datos
+x = np.linspace(0, 10, 100)
+y = np.sin(x)
+
+# Crear gráfico
+plt.figure(figsize=(10, 6))
+plt.plot(x, y, 'b-', linewidth=2)
+plt.title('Función Seno')
+plt.xlabel('X')
+plt.ylabel('sin(X)')
+plt.grid(True, alpha=0.3)
+plt.show()
+
+print('Gráfico creado exitosamente!')"></textarea>
+            <br>
+            <button onclick="executeCode()" id="run-btn" disabled>▶️ Ejecutar (Ctrl+Enter)</button>
+            <button onclick="clearCode()">🗑️ Limpiar</button>
+        </div>
+        
+        <div class="panel">
+            <h3>📋 Salida</h3>
+            <div id="output">Esperando ejecución de código...</div>
+        </div>
+    </div>
+
+    <!-- Cargar Pyodide con múltiples intentos -->
+    <script>
+        let pyodide = null;
+        let pythonReady = false;
+        
+        const statusEl = document.getElementById('status');
+        const statusText = document.getElementById('status-text');
+        const outputEl = document.getElementById('output');
+        const runBtn = document.getElementById('run-btn');
+        
+        function updateStatus(message, type = 'status') {
+            statusText.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+        
+        function log(message) {
+            console.log(message);
+            outputEl.textContent += new Date().toLocaleTimeString() + ' - ' + message + '\n';
+        }
+        
+        // Lista de CDNs para Pyodide
+        const pyodideCDNs = [
+            'https://cdn.pyodide.org/v0.24.1/full/pyodide.js',
+            'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js',
+            'https://unpkg.com/pyodide@0.24.1/pyodide.js'
+        ];
+        
+        async function loadPyodideScript(cdnIndex = 0) {
+            if (cdnIndex >= pyodideCDNs.length) {
+                throw new Error('Todos los CDNs fallaron');
+            }
+            
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = pyodideCDNs[cdnIndex];
+                script.onload = resolve;
+                script.onerror = () => {
+                    console.warn(`CDN ${cdnIndex + 1} falló, probando siguiente...`);
+                    loadPyodideScript(cdnIndex + 1).then(resolve).catch(reject);
+                };
+                document.head.appendChild(script);
+            });
+        }
+        
+        async function initializePython() {
+            try {
+                updateStatus('🔄 Cargando Pyodide...', 'status');
+                
+                // Cargar script de Pyodide
+                await loadPyodideScript();
+                log('✅ Script de Pyodide cargado');
+                
+                // Inicializar Pyodide
+                updateStatus('🔄 Inicializando entorno Python...', 'status');
+                pyodide = await loadPyodide();
+                log('✅ Pyodide inicializado');
+                
+                // Instalar paquetes básicos
+                updateStatus('🔄 Instalando paquetes...', 'status');
+                await pyodide.loadPackage(['numpy', 'pandas', 'matplotlib', 'micropip']);
+                log('✅ Paquetes básicos instalados');
+                
+                // Configurar matplotlib
+                await pyodide.runPython(`
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import io
+import base64
+
+def capture_plot():
+    try:
+        buffer = io.BytesIO()
+        plt.savefig(buffer, format='png', dpi=100, bbox_inches='tight', 
+                   facecolor='white', edgecolor='none')
+        buffer.seek(0)
+        image_base64 = base64.b64encode(buffer.getvalue()).decode()
+        plt.close('all')
+        return f"data:image/png;base64,{image_base64}"
+    except Exception as e:
+        print(f"Error capturando plot: {e}")
+        return None
+
+print("Python listo para usar!")
+                `);
+                
+                pythonReady = true;
+                runBtn.disabled = false;
+                updateStatus('✅ Python listo para usar', 'success');
+                log('🎉 Todo configurado correctamente');
+                
+            } catch (error) {
+                console.error('Error inicializando Python:', error);
+                updateStatus(`❌ Error: ${error.message}`, 'error');
+                log(`❌ Error: ${error.message}`);
+                
+                // Sugerir soluciones
+                if (error.message.includes('CDN') || error.message.includes('network')) {
+                    log('💡 Solución: Verifica tu conexión a internet');
+                } else {
+                    log('💡 Solución: Recarga la página para intentar de nuevo');
+                }
+            }
+        }
+        
+        async function executeCode() {
+            if (!pythonReady) {
+                log('⚠️ Python no está listo aún');
+                return;
+            }
+            
+            const code = document.getElementById('code-editor').value.trim();
+            if (!code) {
+                log('⚠️ No hay código para ejecutar');
+                return;
+            }
+            
+            try {
+                outputEl.textContent = '🔄 Ejecutando código...\n';
+                
+                // Capturar stdout
+                pyodide.runPython(`
+import sys
+import io
+_stdout = sys.stdout
+sys.stdout = mystdout = io.StringIO()
+                `);
+                
+                // Ejecutar código
+                const result = pyodide.runPython(code);
+                
+                // Obtener salida
+                const stdout = pyodide.runPython('mystdout.getvalue()');
+                pyodide.runPython('sys.stdout = _stdout');
+                
+                // Mostrar resultados
+                let output = '';
+                if (stdout) output += stdout + '\n';
+                if (result !== undefined && result !== null) {
+                    output += `Resultado: ${result}\n`;
+                }
+                
+                // Verificar plots
+                const hasPlot = pyodide.runPython(`
+try:
+    len(plt.get_fignums()) > 0
+except:
+    False
+                `);
+                
+                if (hasPlot) {
+                    const plotData = pyodide.runPython('capture_plot()');
+                    if (plotData) {
+                        output += '\n[Gráfico generado]\n';
+                        const img = document.createElement('img');
+                        img.src = plotData;
+                        img.style.maxWidth = '100%';
+                        img.style.borderRadius = '8px';
+                        img.style.marginTop = '1rem';
+                        outputEl.textContent = output;
+                        outputEl.appendChild(img);
+                    }
+                } else {
+                    outputEl.textContent = output || '✅ Código ejecutado (sin salida)';
+                }
+                
+            } catch (error) {
+                outputEl.textContent = `❌ Error: ${error.message}`;
+                console.error('Error ejecutando código:', error);
+            }
+        }
+        
+        function clearCode() {
+            document.getElementById('code-editor').value = '';
+            outputEl.textContent = 'Editor limpiado';
+        }
+        
+        // Atajos de teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                executeCode();
+            }
+        });
+        
+        // Inicializar al cargar
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Iniciando Notebook Architect Simple...');
+            initializePython();
+        });
+    </script>
+</body>
+</html>

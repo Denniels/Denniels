@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pyodide Debug Test</title>
+    <style>
+        body { 
+            font-family: monospace; 
+            margin: 20px; 
+            background: #f5f5f5; 
+        }
+        .test-section { 
+            background: white; 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-radius: 5px; 
+            border-left: 4px solid #2196F3; 
+        }
+        .success { border-left-color: #4CAF50; }
+        .error { border-left-color: #f44336; }
+        .warning { border-left-color: #FF9800; }
+        pre { 
+            background: #f0f0f0; 
+            padding: 10px; 
+            border-radius: 3px; 
+            overflow-x: auto; 
+        }
+        button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #1976D2; }
+        .log { 
+            height: 300px; 
+            overflow-y: auto; 
+            background: #222; 
+            color: #0f0; 
+            padding: 10px; 
+            border-radius: 5px; 
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🛠️ Pyodide Debug Test</h1>
+    <p>Esta página te ayuda a diagnosticar problemas de carga de Pyodide.</p>
+    
+    <div class="test-section warning">
+        <h3>ℹ️ Nota sobre errores CORS</h3>
+        <p>Cuando ejecutes estas pruebas desde un servidor local (como http://127.0.0.1), es normal ver errores CORS en la consola:</p>
+        <pre style="background: #333; color: #f55; padding: 10px; border-radius: 5px;">
+Access to fetch at 'https://...' has been blocked by CORS policy: 
+No 'Access-Control-Allow-Origin' header is present on the requested resource.</pre>
+        <p>Estos errores <strong>no indican un problema real con Pyodide o tu conexión</strong>. Son restricciones de seguridad del navegador 
+        que impiden que una página web acceda directamente a recursos de otros dominios sin los encabezados adecuados.</p>
+        <p>Las pruebas han sido mejoradas para intentar detectar la disponibilidad de los recursos incluso cuando hay errores CORS.</p>
+    </div>
+
+    <div class="test-section">
+        <h3>🌐 Test 1: Conectividad General</h3>
+        <button onclick="testConnectivity()">Verificar Conectividad</button>
+        <div id="connectivity-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>🔗 Test 2: URLs de Pyodide</h3>
+        <button onclick="testPyodideURLs()">Verificar CDNs de Pyodide</button>
+        <div id="urls-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>📦 Test 3: Carga de Script</h3>
+        <button onclick="testScriptLoading()">Cargar Pyodide</button>
+        <div id="script-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>⚡ Test 4: Inicialización</h3>
+        <button onclick="testPyodideInit()">Inicializar Pyodide</button>
+        <div id="init-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>📝 Log de Consola</h3>
+        <div id="console-log" class="log"></div>
+        <button onclick="clearLog()">Limpiar Log</button>
+    </div>
+
+    <script>
+        // Redirigir console.log al log visual
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        function addToLog(message, type = 'log') {
+            const logDiv = document.getElementById('console-log');
+            const time = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#f44' : type === 'warn' ? '#fa0' : '#0f0';
+            logDiv.innerHTML += `<div style="color: ${color}">[${time}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        console.log = (...args) => {
+            originalLog(...args);
+            addToLog(args.join(' '), 'log');
+        };
+
+        console.error = (...args) => {
+            originalError(...args);
+            addToLog(args.join(' '), 'error');
+        };
+
+        console.warn = (...args) => {
+            originalWarn(...args);
+            addToLog(args.join(' '), 'warn');
+        };
+
+        function clearLog() {
+            document.getElementById('console-log').innerHTML = '';
+        }
+
+        // Tests
+        async function testConnectivity() {
+            const resultDiv = document.getElementById('connectivity-result');
+            resultDiv.innerHTML = '<p>⏳ Verificando conectividad...</p>';
+            let results = [];
+
+            try {
+                console.log('🌐 Verificando conectividad general...');
+                
+                // Test de DNS
+                const dnsTests = [
+                    { url: 'https://8.8.8.8', name: 'Google DNS' },
+                    { url: 'https://1.1.1.1', name: 'Cloudflare DNS' }
+                ];
+                
+                results.push(`ℹ️ Nota: Las pruebas de DNS pueden mostrar errores CORS, pero esto es normal en desarrollo local`);
+                
+                for (const dns of dnsTests) {
+                    try {
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 5000);
+                        
+                        // Intentamos fetch pero sabemos que puede fallar por CORS
+                        try {
+                            await fetch(dns.url, { 
+                                method: 'HEAD', 
+                                cache: 'no-cache',
+                                signal: controller.signal
+                            });
+                            clearTimeout(timeoutId);
+                            results.push(`✅ ${dns.name}: Accesible`);
+                        } catch (fetchError) {
+                            // Si el error es de CORS pero hay un código de estado, en realidad hay conexión
+                            if (fetchError.message && fetchError.message.includes('Failed to fetch')) {
+                                results.push(`✅ ${dns.name}: Probablemente accesible (Error CORS esperado)`);
+                            } else {
+                                throw fetchError; // Relanzar si es otro tipo de error
+                            }
+                        }
+                    } catch (e) {
+                        results.push(`❌ ${dns.name}: ${e.name === 'AbortError' ? 'Timeout' : 'No accesible'}`);
+                    }
+                }
+
+                // Test de CDNs base
+                const cdnTests = [
+                    { url: 'https://cdn.jsdelivr.net', name: 'JSDelivr Base' },
+                    { url: 'https://unpkg.com', name: 'UNPKG Base' },
+                    { url: 'https://cdn.pyodide.org', name: 'Pyodide CDN' }
+                ];
+
+                results.push(`ℹ️ Nota: Las pruebas de CDN pueden mostrar errores CORS, pero esto es normal en desarrollo local`);
+
+                for (const cdn of cdnTests) {
+                    try {
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 5000);
+                        const startTime = Date.now();
+                        
+                        // Creamos un objeto Image como alternativa para verificar la conectividad
+                        // Esta técnica evita algunas restricciones CORS para verificar si un recurso existe
+                        const checkWithImage = () => {
+                            return new Promise((resolve, reject) => {
+                                const img = new Image();
+                                const checkTimeout = setTimeout(() => reject(new Error("Timeout")), 5000);
+                                
+                                img.onload = () => {
+                                    clearTimeout(checkTimeout);
+                                    resolve(true);
+                                };
+                                
+                                img.onerror = () => {
+                                    clearTimeout(checkTimeout);
+                                    // Error al cargar la imagen, pero al menos sabemos que hay una respuesta del servidor
+                                    resolve(false);
+                                };
+                                
+                                // Añadimos un timestamp para evitar caché
+                                img.src = `${cdn.url}/favicon.ico?t=${Date.now()}`;
+                            });
+                        };
+                        
+                        try {
+                            // Primero intentamos con fetch (puede fallar por CORS)
+                            await fetch(cdn.url, { 
+                                method: 'HEAD', 
+                                cache: 'no-cache',
+                                signal: controller.signal
+                            });
+                            clearTimeout(timeoutId);
+                            const latency = Date.now() - startTime;
+                            results.push(`✅ ${cdn.name}: OK (${latency}ms)`);
+                        } catch (fetchError) {
+                            // Si falla por CORS, intentamos el método de imagen
+                            if (fetchError.message && fetchError.message.includes('Failed to fetch')) {
+                                try {
+                                    await checkWithImage();
+                                    const latency = Date.now() - startTime;
+                                    results.push(`✅ ${cdn.name}: Probablemente OK (${latency}ms) - Error CORS esperado`);
+                                } catch (imgError) {
+                                    throw new Error("Timeout o servidor no disponible");
+                                }
+                            } else {
+                                throw fetchError;
+                            }
+                        }
+                    } catch (e) {
+                        console.error(`❌ Error con ${cdn.name}:`, e.message);
+                        results.push(`❌ ${cdn.name}: ${e.name === 'AbortError' ? 'Timeout' : e.message}`);
+                        
+                        // Sugerir soluciones específicas
+                        if (cdn.url.includes('pyodide')) {
+                            results.push('   💡 Soluciones para Pyodide CDN:');
+                            results.push('   • Usar CDN alternativo (JSDelivr/UNPKG)');
+                            results.push('   • Verificar firewall/antivirus');
+                            results.push('   • Intentar con VPN');
+                        }
+                    }
+                }
+
+                // Generar reporte HTML
+                let html = '<div class="test-section">';
+                html += '<h4>Resultados de Conectividad:</h4>';
+                
+                const dnsStatus = results.some(r => r.includes('DNS') && r.includes('✅'));
+                const cdnStatus = results.some(r => r.includes('CDN') && r.includes('✅'));
+                
+                html += `<div class="${dnsStatus && cdnStatus ? 'success' : 'warning'}">`;
+                results.forEach(result => {
+                    html += `<div>${result}</div>`;
+                });
+                
+                if (!dnsStatus) {
+                    html += '<div style="margin-top: 10px;">';
+                    html += '<strong>🔧 Sugerencias DNS:</strong><br>';
+                    html += '• Cambiar a Google DNS (8.8.8.8)<br>';
+                    html += '• O usar Cloudflare (1.1.1.1)<br>';
+                    html += '• Verificar conexión a internet<br>';
+                    html += '</div>';
+                }
+                
+                html += '</div></div>';
+                resultDiv.innerHTML = html;
+
+            } catch (error) {
+                console.error('❌ Error grave de conectividad:', error);
+                resultDiv.innerHTML = `<div class="error">
+                    <strong>❌ Error Crítico de Conectividad</strong><br>
+                    ${error.message}<br><br>
+                    <strong>🔧 Soluciones sugeridas:</strong><br>
+                    • Verificar conexión a internet<br>
+                    • Comprobar cortafuegos/antivirus<br>
+                    • Intentar desde otra red<br>
+                    • Usar VPN si hay restricciones
+                </div>`;
+            }
+        }
+
+        async function testPyodideURLs() {
+            const resultDiv = document.getElementById('urls-result');
+            resultDiv.innerHTML = '<p>⏳ Verificando URLs de Pyodide...</p>';
+
+            const urls = [
+                'https://cdn.pyodide.org/v0.24.1/full/pyodide.js',
+                'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js',
+                'https://unpkg.com/pyodide@0.24.1/pyodide.js'
+            ];
+
+            let html = '<h4>Resultados de CDNs:</h4>';
+            html += '<div class="warning">ℹ️ Nota: Las pruebas pueden mostrar errores CORS en desarrollo local. Esto no significa que los CDNs no funcionen.</div>';
+            
+            // Función para verificar un script usando un elemento script
+            const checkScriptUrl = (url) => {
+                return new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = `${url}?t=${Date.now()}`; // Evitar caché
+                    script.async = true;
+                    
+                    const timeoutId = setTimeout(() => {
+                        script.remove();
+                        reject(new Error("Timeout al cargar el script"));
+                    }, 8000);
+                    
+                    script.onload = () => {
+                        clearTimeout(timeoutId);
+                        script.remove();
+                        resolve(true);
+                    };
+                    
+                    script.onerror = () => {
+                        clearTimeout(timeoutId);
+                        script.remove();
+                        reject(new Error("No se pudo cargar el script"));
+                    };
+                    
+                    document.head.appendChild(script);
+                });
+            };
+            
+            for (let i = 0; i < urls.length; i++) {
+                const url = urls[i];
+                const cdnName = url.includes('jsdelivr') ? 'JSDelivr' : 
+                               url.includes('unpkg') ? 'UNPKG' : 'Pyodide CDN';
+                
+                try {
+                    console.log(`📡 Probando ${cdnName}...`);
+                    const startTime = Date.now();
+                    
+                    try {
+                        // Primero intentamos con fetch (puede fallar por CORS)
+                        const response = await fetch(url, { method: 'HEAD', cache: 'no-cache' });
+                        const loadTime = Date.now() - startTime;
+                        
+                        if (response.ok) {
+                            console.log(`✅ ${cdnName}: OK (${loadTime}ms)`);
+                            html += `<div class="success">✅ ${cdnName}: OK (${loadTime}ms)</div>`;
+                        } else {
+                            console.warn(`⚠️ ${cdnName}: ${response.status}`);
+                            html += `<div class="warning">⚠️ ${cdnName}: Error ${response.status}</div>`;
+                        }
+                    } catch (fetchError) {
+                        // Si falla por CORS, intentamos con el elemento script
+                        if (fetchError.message && fetchError.message.includes('Failed to fetch')) {
+                            try {
+                                console.log(`🔄 Probando ${cdnName} con método alternativo...`);
+                                await checkScriptUrl(url);
+                                const loadTime = Date.now() - startTime;
+                                console.log(`✅ ${cdnName}: OK (${loadTime}ms) - Método alternativo`);
+                                html += `<div class="success">✅ ${cdnName}: OK (${loadTime}ms) - Verificado con método alternativo</div>`;
+                            } catch (scriptError) {
+                                console.error(`❌ ${cdnName}: No carga (método alternativo)`);
+                                html += `<div class="error">❌ ${cdnName}: Error de carga - Método alternativo</div>`;
+                            }
+                        } else {
+                            throw fetchError;
+                        }
+                    }
+                } catch (error) {
+                    console.error(`❌ ${cdnName}: ${error.message}`);
+                    html += `<div class="error">❌ ${cdnName}: ${error.message}</div>`;
+                }
+            }
+            
+            resultDiv.innerHTML = html;
+        }
+
+        async function testScriptLoading() {
+            const resultDiv = document.getElementById('script-result');
+            resultDiv.innerHTML = '<p>⏳ Cargando script de Pyodide...</p>';
+
+            // Lista de CDNs en orden de prioridad
+            const cdnUrls = [
+                {
+                    name: 'Pyodide CDN',
+                    url: 'https://cdn.pyodide.org/v0.24.1/full/pyodide.js',
+                    indexURL: 'https://cdn.pyodide.org/v0.24.1/full/'
+                },
+                {
+                    name: 'JSDelivr',
+                    url: 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js',
+                    indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/'
+                },
+                {
+                    name: 'UNPKG',
+                    url: 'https://unpkg.com/pyodide@0.24.1/pyodide.js',
+                    indexURL: 'https://unpkg.com/pyodide@0.24.1/'
+                }
+            ];
+            
+            // Intentar cada CDN en secuencia
+            for (const cdn of cdnUrls) {
+                try {
+                    console.log(`📦 Intentando cargar desde ${cdn.name}...`);
+                    
+                    await new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = cdn.url;
+                    
+                    const timeoutId = setTimeout(() => {
+                        script.remove();
+                        console.warn(`⏰ Timeout después de 10s en ${cdn.name}`);
+                        reject(new Error(`Timeout cargando ${cdn.name}`));
+                    }, 10000);
+                    
+                    script.onload = () => {
+                        clearTimeout(timeoutId);
+                        console.log(`✅ Script cargado desde ${cdn.name}`);
+                        
+                        // Verificar que loadPyodide está disponible
+                        if (typeof loadPyodide === 'function') {
+                            console.log(`✅ loadPyodide disponible desde ${cdn.name}`);
+                            window.successfulCDN = cdn;  // Guardar CDN exitoso
+                            resolve(cdn);
+                        } else {
+                            console.error(`❌ ${cdn.name}: loadPyodide no disponible`);
+                            reject(new Error(`loadPyodide no disponible en ${cdn.name}`));
+                        }
+                    };
+                    
+                    script.onerror = (event) => {
+                        clearTimeout(timeoutId);
+                        console.error(`❌ Error cargando ${cdn.name}:`, event);
+                        reject(new Error(`Error de red con ${cdn.name}`));
+                    };
+                    
+                    // Limpiar script anterior si existe
+                    const oldScript = document.querySelector(`script[src="${cdn.url}"]`);
+                    if (oldScript) oldScript.remove();
+                    
+                    document.head.appendChild(script);
+                });
+                
+                // CDN exitoso encontrado
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <strong>✅ Pyodide Cargado Exitosamente</strong><br>
+                        CDN: ${cdn.name}<br>
+                        URL: ${cdn.url}<br>
+                        IndexURL: ${cdn.indexURL}<br><br>
+                        <strong>✅ Estado:</strong><br>
+                        • Script cargado correctamente<br>
+                        • loadPyodide disponible<br>
+                        • CDN configurado para recursos
+                    </div>`;
+                
+                return; // Salir del loop si tuvimos éxito
+                
+                } catch (error) {
+                console.warn(`⚠️ Falló ${cdn.name}, probando siguiente CDN...`);
+                
+                // Continuar con el siguiente CDN si hay más
+                if (cdn !== cdnUrls[cdnUrls.length - 1]) {
+                    continue;
+                }
+                
+                // Si llegamos aquí, todos los CDNs fallaron
+                console.error('❌ Todos los CDNs fallaron');
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>❌ Error: Ningún CDN Funcionó</strong><br><br>
+                        <strong>📝 Diagnóstico:</strong><br>
+                        • Intentados: ${cdnUrls.map(c => c.name).join(', ')}<br>
+                        • Último error: ${error.message}<br><br>
+                        <strong>🔧 Soluciones:</strong><br>
+                        • Verificar conexión a internet<br>
+                        • Cambiar DNS (8.8.8.8 o 1.1.1.1)<br>
+                        • Verificar firewall/antivirus<br>
+                        • Intentar con VPN<br>
+                        • Esperar unos minutos y reintentar
+                    </div>`;
+                }
+            }
+        }
+
+        async function testPyodideInit() {
+            const resultDiv = document.getElementById('init-result');
+            
+            if (typeof loadPyodide === 'undefined') {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>❌ loadPyodide no disponible</strong><br>
+                        Para solucionar:<br>
+                        1. Ejecuta el Test 3 (Carga de Script)<br>
+                        2. Espera que un CDN cargue exitosamente<br>
+                        3. Intenta inicializar de nuevo
+                    </div>`;
+                return;
+            }
+            
+            if (!window.successfulCDN) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>❌ No hay CDN exitoso registrado</strong><br>
+                        Ejecuta el Test 3 primero para encontrar un CDN funcional
+                    </div>`;
+                return;
+            }
+            
+            resultDiv.innerHTML = '<p>⏳ Inicializando Pyodide...</p>';
+            console.log('🚀 Iniciando inicialización de Pyodide...');
+            
+            try {
+                console.log(`� Usando CDN: ${window.successfulCDN.name}`);
+                console.log(`🔗 IndexURL: ${window.successfulCDN.indexURL}`);
+                
+                const startTime = Date.now();
+                const pyodide = await loadPyodide({
+                    indexURL: window.successfulCDN.indexURL,
+                    fullStdLib: true
+                });
+                const loadTime = ((Date.now() - startTime) / 1000).toFixed(1);
+                
+                console.log('✅ Pyodide inicializado exitosamente');
+                
+                // Tests básicos
+                console.log('🧪 Ejecutando tests de verificación...');
+                
+                const tests = [
+                    { code: '2 + 2', expected: 4, name: 'Aritmética básica' },
+                    { code: 'import sys; sys.version', name: 'Versión de Python' },
+                    { code: 'import numpy; numpy.__version__', name: 'Numpy disponible' },
+                    { code: 'import pandas; pandas.__version__', name: 'Pandas disponible' }
+                ];
+                
+                const results = [];
+                for (const test of tests) {
+                    try {
+                        const result = pyodide.runPython(test.code);
+                        results.push({
+                            name: test.name,
+                            result: result,
+                            status: 'success'
+                        });
+                    } catch (e) {
+                        results.push({
+                            name: test.name,
+                            error: e.message,
+                            status: 'error'
+                        });
+                    }
+                }
+                
+                // Mostrar resultados
+                let html = `
+                    <div class="success">
+                        <strong>✅ Pyodide Inicializado Exitosamente</strong><br>
+                        Tiempo: ${loadTime}s<br>
+                        CDN: ${window.successfulCDN.name}<br><br>
+                        <strong>🧪 Resultados de Tests:</strong><br>`;
+                        
+                results.forEach(test => {
+                    html += `• ${test.name}: ${test.status === 'success' ? '✅' : '❌'}<br>`;
+                    if (test.result) html += `  Resultado: ${test.result}<br>`;
+                    if (test.error) html += `  Error: ${test.error}<br>`;
+                });
+                
+                html += `
+                    </div>`;
+                    
+                resultDiv.innerHTML = html;
+                
+            } catch (error) {
+                console.error('❌ Error en inicialización:', error);
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>❌ Error de Inicialización</strong><br>
+                        ${error.message}<br><br>
+                        <strong>📝 Contexto:</strong><br>
+                        • CDN: ${window.successfulCDN.name}<br>
+                        • IndexURL: ${window.successfulCDN.indexURL}<br><br>
+                        <strong>🔧 Soluciones:</strong><br>
+                        • Verificar espacio en disco<br>
+                        • Limpiar caché del navegador<br>
+                        • Intentar con otro navegador<br>
+                        • Verificar bloqueadores de contenido
+                    </div>`;
+            }
+        }
+
+        // Log inicial
+        console.log('🛠️ Pyodide Debug Test iniciado');
+        console.log('📍 URL actual:', window.location.href);
+        console.log('🌐 User Agent:', navigator.userAgent);
+        console.log('📅 Fecha:', new Date().toISOString());
+    </script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+/* Estilos responsive para Notebook Architect Web */
+@media (max-width: 768px) {
+    #app {
+        padding: 1rem;
+    }
+}
+@media (max-width: 480px) {
+    #app {
+        padding: 0.5rem;
+    }
+}
+
+.notebook-controls {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: var(--background);
+    border-radius: 4px;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.notebook-controls button {
+    background: var(--secondary);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.notebook-controls button:hover {
+    background: var(--primary);
+}
+
+.cell {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.cell-toolbar {
+    background: var(--border);
+    padding: 0.5rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: var(--muted);
+}
+
+.cell-toolbar button {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    margin-left: 0.5rem;
+}
+
+.cell-toolbar button:hover {
+    background: var(--secondary);
+}
+
+.cell-content {
+    padding: 1rem;
+    margin: 0;
+}
+
+.cell-editor {
+    width: 100%;
+    min-height: 100px;
+    padding: 1rem;
+    border: none;
+    font-family: 'Fira Mono', 'Consolas', monospace;
+    font-size: 0.9rem;
+    resize: vertical;
+    background: var(--background);
+    color: var(--text);
+}
+
+.cell-output {
+    border-top: 1px solid var(--border);
+    padding: 1rem;
+    background: var(--background);
+}
+
+.output-executing {
+    color: var(--accent);
+    font-style: italic;
+}
+
+.output-result {
+    color: var(--text);
+    font-family: 'Fira Mono', 'Consolas', monospace;
+    white-space: pre-wrap;
+}
+
+.output-result table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+.output-result th,
+.output-result td {
+    border: 1px solid var(--border);
+    padding: 0.5rem;
+    text-align: left;
+}
+
+.output-result th {
+    background: var(--primary);
+    color: white;
+}
+
+.output-error {
+    color: #e74c3c;
+    background: #fdf2f2;
+    padding: 0.5rem;
+    border-radius: 4px;
+    border-left: 4px solid #e74c3c;
+}
+
+.cell.markdown .cell-content h1,
+.cell.markdown .cell-content h2,
+.cell.markdown .cell-content h3 {
+    margin-top: 0;
+    color: var(--primary);
+}
+
+.cell.markdown .cell-content code {
+    background: var(--background);
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    font-family: 'Fira Mono', 'Consolas', monospace;
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    #agent-panel {
+        order: -1;
+        min-width: auto;
+    }
+    
+    .notebook-controls {
+        flex-wrap: wrap;
+    }
+    
+    .cell-toolbar {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .cell-editor {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .navbar {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .navbar h1 {
+        font-size: 1.3rem;
+    }
+    
+    .main-content {
+        margin: 1rem;
+    }
+    
+    .cell-toolbar {
+        font-size: 0.8rem;
+    }
+    
+    .cell-toolbar button {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+    }
+}

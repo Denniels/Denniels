@@ -1,0 +1,91 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": { "language": "markdown" },
+      "source": [
+        "# Bienvenido a Notebook Architect Web\n",
+        "Este es un proyecto de ejemplo que muestra las capacidades de la nueva plataforma.\n",
+        "\n",
+        "- Generación y análisis de datos\n",
+        "- Visualizaciones interactivas y estáticas\n",
+        "- Interacción con un agente experto en Python, SQL, visualización y estadística\n",
+        "\n",
+        "¡Comienza explorando los datos y conversando con el agente!"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": { "language": "python" },
+      "source": [
+        "# Generar datos de prueba\n",
+        "import pandas as pd\n",
+        "import numpy as np\n",
+        "np.random.seed(42)\n",
+        "df = pd.DataFrame({\n",
+        "    'A': np.random.normal(0, 1, 100),\n",
+        "    'B': np.random.uniform(10, 50, 100),\n",
+        "    'C': np.random.randint(0, 100, 100),\n",
+        "    'D': np.random.choice(['X', 'Y', 'Z'], 100),\n",
+        "    'E': np.random.beta(2, 5, 100)\n",
+        "})\n",
+        "df.head()"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": { "language": "markdown" },
+      "source": [
+        "## Visualizaciones generadas automáticamente\n",
+        "A continuación se muestran 10 visualizaciones de los datos, presentadas en 5 estilos diferentes: dashboard estático, dashboard interactivo, tarjetas informativas, gráficos individuales y resumen visual."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": { "language": "python" },
+      "source": [
+        "import plotly.express as px\n",
+        "import matplotlib.pyplot as plt\n",
+        "import seaborn as sns\n",
+        "import plotly.graph_objects as go\n",
+        "# 1. Histograma de A\n",
+        "fig1 = px.histogram(df, x='A', title='Histograma de A')\n",
+        "# 2. Boxplot de B\n",
+        "fig2 = px.box(df, y='B', title='Boxplot de B')\n",
+        "# 3. Gráfico de barras de D\n",
+        "fig3 = px.bar(df['D'].value_counts().reset_index(), x='index', y='D', title='Frecuencia de D')\n",
+        "# 4. Dispersión A vs B\n",
+        "fig4 = px.scatter(df, x='A', y='B', color='D', title='Dispersión A vs B')\n",
+        "# 5. Violin plot de E por D\n",
+        "fig5 = px.violin(df, y='E', x='D', box=True, title='Violin plot de E por D')\n",
+        "# 6. Heatmap de correlación\n",
+        "corr = df[['A','B','C','E']].corr()\n",
+        "fig6 = go.Figure(data=go.Heatmap(z=corr.values, x=corr.columns, y=corr.columns, colorscale='Viridis'))\n",
+        "fig6.update_layout(title='Heatmap de correlación')\n",
+        "# 7. Pie chart de D\n",
+        "fig7 = px.pie(df, names='D', title='Distribución de D')\n",
+        "# 8. Line plot de B\n",
+        "fig8 = px.line(df, y='B', title='Serie temporal de B')\n",
+        "# 9. Pairplot\n",
+        "sns.pairplot(df[['A','B','C','E']])\n",
+        "plt.suptitle('Pairplot de variables numéricas')\n",
+        "# 10. Gráfico de barras apiladas de D y C\n",
+        "df_group = df.groupby('D')['C'].sum().reset_index()\n",
+        "fig10 = px.bar(df_group, x='D', y='C', title='Suma de C por D', color='D')\n"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": { "language": "markdown" },
+      "source": [
+        "## Conversa con el agente\n",
+        "Puedes pedirle al agente que te ayude a explorar los datos, crear nuevas visualizaciones, cargar archivos o conectarte a bases de datos. Ejemplo:\n",
+        "\n",
+        "- ¿Qué variables están más correlacionadas?\n",
+        "- ¿Cómo puedo filtrar los datos por la categoría 'X'?\n",
+        "- Genera un resumen estadístico de las variables numéricas.\n",
+        "- Crea un gráfico de dispersión entre A y E.\n"
+      ]
+    }
+  ]
+}

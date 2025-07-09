@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notebook Architect - Pyodide Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        h1, h2, h3 {
+            color: #1a237e;
+        }
+        .card {
+            background: white;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border-left: 4px solid #3949ab;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        button {
+            background: #3949ab;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #1a237e;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 14px;
+        }
+        code {
+            font-family: 'Courier New', monospace;
+        }
+        .notebook {
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            margin: 20px 0;
+            padding: 10px;
+        }
+        .notebook-cell {
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+            position: relative;
+        }
+        .markdown-cell {
+            background-color: #f8f9fa;
+            border-left: 3px solid #4caf50;
+        }
+        .code-cell {
+            background-color: #f1f8ff;
+            border-left: 3px solid #2196f3;
+        }
+        .cell-input {
+            width: 100%;
+            min-height: 100px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+        }
+        .output {
+            background: #f8f8f8;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border-left: 3px solid #ff9800;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+        }
+        .actions {
+            display: flex;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0,0,0,0.2);
+            border-radius: 50%;
+            border-top-color: #3949ab;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .hidden {
+            display: none;
+        }
+        .status {
+            margin: 15px 0;
+            padding: 10px;
+            background: #e8eaf6;
+            border-radius: 5px;
+        }
+        #agentPrompt {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-family: system-ui;
+            font-size: 16px;
+        }
+        .cell-toolbar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 5px;
+        }
+        .toolbar-button {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            padding: 3px 8px;
+            margin-left: 5px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .toolbar-button:hover {
+            background: #e0e0e0;
+        }
+        .processing-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .processing-message {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .processing-steps {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 3px;
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        #agentStatus {
+            max-height: 500px;
+            overflow: auto;
+            padding: 15px;
+            background: #f8f9fa;
+            border-left: 3px solid #3949ab;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Notebook Architect - Test con Pyodide</h1>
+        
+        <div class="card">
+            <h2>Estado de Pyodide</h2>
+            <button id="testButton">Probar Conexión a Pyodide</button>
+            <div id="result" class="status">Estado de Pyodide aparecerá aquí...</div>
+        </div>
+        
+        <div class="card">
+            <h2>Agente IA</h2>
+            <p>Escribe una instrucción para que el agente cree o modifique celdas en el notebook:</p>
+            <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                <button id="checkLLM" style="margin-right: 10px; background-color: #ff9800;">Verificar Conexión LLM</button>
+                <div id="llmStatus" style="display: none; padding: 5px 10px; border-radius: 3px;"></div>
+            </div>
+            <textarea id="agentPrompt" rows="3" placeholder="Ej: Crea una celda que muestre un gráfico de barras con datos aleatorios"></textarea>
+            <button id="processPrompt">Procesar con IA</button>
+            <div id="agentStatus" class="status hidden">Procesando solicitud...</div>
+        </div>
+        
+        <div class="card">
+            <h2>Archivos de Notebook</h2>
+            <p>Puedes ver los archivos notebook generados en la carpeta:</p>
+            <code>e:\repos\Notebook_Architect\notebooks\</code>
+            <div class="actions">
+                <a href="notebooks/pyodide_notebook_demo.ipynb" download target="_blank">
+                    <button>Descargar notebook_demo.ipynb</button>
+                </a>
+            </div>
+        </div>
+        
+        <h2>Notebook</h2>
+        <div class="actions">
+            <button id="addMarkdownCell">Agregar Celda Markdown</button>
+            <button id="addCodeCell">Agregar Celda Código</button>
+            <button id="runAllCells">Ejecutar Todo</button>
+            <button id="saveNotebook">Guardar Notebook</button>
+        </div>
+        
+        <div id="notebook" class="notebook">
+            <!-- Las celdas se generarán dinámicamente aquí -->
+            <div class="status">Cargando notebook...</div>
+        </div>
+    </div>
+    
+    <div id="processingOverlay" class="processing-overlay hidden">
+        <div class="processing-message">El agente está procesando tu solicitud...</div>
+        <div class="spinner" style="width: 50px; height: 50px; border-width: 5px;"></div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuid.min.js"></script>
+    <script>
+        // Variables globales
+        let pyodide = null;
+        let notebookData = null;
+        const notebookPath = 'notebooks/pyodide_notebook_demo.ipynb';
+        
+        // Configuración del modelo LLM
+        const MODEL_API_URL = 'http://192.168.0.109:1234/v1/chat/completions';
+        const SYSTEM_PROMPT = `Eres un asistente de programación Python especializado en notebooks interactivos. 
+Tu trabajo es crear y explicar código Python o contenido markdown según las instrucciones del usuario.
+
+Responde SIEMPRE utilizando el siguiente formato XML:
+
+<VSCode.Cell language="markdown">
+# Título de la celda
+Contenido en markdown
+</VSCode.Cell>
+
+<VSCode.Cell language="python">
+# Código Python
+import numpy as np
+print("Ejemplo de código")
+</VSCode.Cell>
+
+IMPORTANTE: 
+1. No utilices comillas alrededor del atributo language.
+2. No comentes sobre la estructura ni uses texto fuera de las etiquetas <VSCode.Cell>.
+3. Asegúrate de que cada celda de código sea funcional y esté bien comentada.
+4. El código Python debe ejecutarse correctamente en un entorno con Pyodide en el navegador.
+5. Incluye celdas markdown para explicar conceptos cuando sea necesario.
+6. Incluye sólo etiquetas <VSCode.Cell>, no añadas otras etiquetas HTML.
+
+Ejemplo de formato correcto:
+<VSCode.Cell language="markdown">
+# Análisis de Datos con Pandas
+Este notebook demuestra cómo realizar un análisis básico.
+</VSCode.Cell>
+<VSCode.Cell language="python">
+# Importar bibliotecas
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Crear algunos datos de ejemplo
+data = pd.DataFrame({
+    'x': np.random.rand(10),
+    'y': np.random.rand(10)
+})
+print(data.head())
+</VSCode.Cell>`;
+        
+        // Inicializar Pyodide
+        document.getElementById('testButton').addEventListener('click', async function() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerText = 'Cargando Pyodide...';
+            
+            try {
+                if (!pyodide) {
+                    pyodide = await loadPyodide({
+                        indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.1/full/",
+                        fullStdLib: true
+                    });
+                    
+                    // Ejecutar código Python simple
+                    const result = pyodide.runPython(`
+                        import sys
+                        f"Python {sys.version} funcionando en Pyodide"
+                    `);
+                    
+                    resultDiv.innerHTML = `<strong>✅ Conexión exitosa:</strong> ${result}`;
+                    loadNotebook();
+                } else {
+                    resultDiv.innerHTML = '<strong>✅ Pyodide ya está cargado y listo para usar</strong>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<strong>❌ Error:</strong> ${error.message}`;
+            }
+        });
+
+        // Función para cargar el notebook
+        async function loadNotebook() {
+            try {
+                const response = await fetch(notebookPath);
+                if (!response.ok) {
+                    throw new Error(`Error al cargar notebook: ${response.status}`);
+                }
+                
+                notebookData = await response.json();
+                renderNotebook();
+                
+                document.querySelector('#notebook .status')?.remove();
+            } catch (error) {
+                console.error('Error cargando notebook:', error);
+                document.querySelector('#notebook').innerHTML = `
+                    <div class="status">
+                        Error al cargar notebook: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Función para renderizar el notebook
+        function renderNotebook() {
+            const notebookElement = document.getElementById('notebook');
+            notebookElement.innerHTML = '';
+            
+            notebookData.cells.forEach((cell, index) => {
+                const cellElement = createCellElement(cell, index);
+                notebookElement.appendChild(cellElement);
+            });
+        }
+
+        // Función para crear un elemento de celda
+        function createCellElement(cell, index) {
+            const cellElement = document.createElement('div');
+            cellElement.className = `notebook-cell ${cell.cell_type === 'markdown' ? 'markdown-cell' : 'code-cell'}`;
+            cellElement.dataset.cellId = cell.id || uuid.v4();
+            cellElement.dataset.cellType = cell.cell_type;
+            cellElement.dataset.cellIndex = index;
+            
+            // Crear barra de herramientas
+            const toolbarElement = document.createElement('div');
+            toolbarElement.className = 'cell-toolbar';
+            
+            if (cell.cell_type === 'code') {
+                const runButton = document.createElement('button');
+                runButton.className = 'toolbar-button';
+                runButton.innerText = '▶️ Ejecutar';
+                runButton.onclick = () => executeCell(cellElement);
+                toolbarElement.appendChild(runButton);
+            }
+            
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'toolbar-button';
+            deleteButton.innerText = '🗑️ Eliminar';
+            deleteButton.onclick = () => deleteCell(cellElement);
+            toolbarElement.appendChild(deleteButton);
+            
+            cellElement.appendChild(toolbarElement);
+            
+            // Crear área de entrada
+            const inputElement = document.createElement('div');
+            inputElement.className = 'cell-input-area';
+            
+            const textareaElement = document.createElement('textarea');
+            textareaElement.className = 'cell-input';
+            textareaElement.value = Array.isArray(cell.source) ? cell.source.join('') : cell.source;
+            inputElement.appendChild(textareaElement);
+            
+            cellElement.appendChild(inputElement);
+            
+            // Si es una celda de código, agregar área de salida
+            if (cell.cell_type === 'code') {
+                const outputElement = document.createElement('div');
+                outputElement.className = 'output';
+                
+                // Si hay salidas, mostrarlas
+                if (cell.outputs && cell.outputs.length > 0) {
+                    let outputContent = '';
+                    cell.outputs.forEach(output => {
+                        if (output.output_type === 'stream') {
+                            outputContent += output.text.join('');
+                        } else if (output.output_type === 'execute_result') {
+                            outputContent += output.data['text/plain'].join('');
+                        }
+                    });
+                    outputElement.textContent = outputContent;
+                } else {
+                    outputElement.textContent = '';
+                }
+                
+                cellElement.appendChild(outputElement);
+            } else {
+                // Para celdas markdown, renderizar el contenido
+                const renderedElement = document.createElement('div');
+                renderedElement.className = 'rendered-markdown hidden';
+                renderedElement.innerHTML = marked.parse(textareaElement.value);
+                
+                // Toggle entre edición y vista previa al hacer doble clic
+                renderedElement.addEventListener('dblclick', () => {
+                    renderedElement.classList.add('hidden');
+                    inputElement.classList.remove('hidden');
+                });
+                
+                textareaElement.addEventListener('blur', () => {
+                    renderedElement.innerHTML = marked.parse(textareaElement.value);
+                    inputElement.classList.add('hidden');
+                    renderedElement.classList.remove('hidden');
+                });
+                
+                cellElement.appendChild(renderedElement);
+                
+                // Mostrar inicialmente el markdown renderizado
+                setTimeout(() => {
+                    inputElement.classList.add('hidden');
+                    renderedElement.classList.remove('hidden');
+                }, 100);
+            }
+            
+            return cellElement;
+        }
+
+        // Función para ejecutar una celda de código
+        async function executeCell(cellElement) {
+            if (cellElement.dataset.cellType !== 'code') return;
+            
+            if (!pyodide) {
+                alert('Pyodide no está inicializado. Haz clic en "Probar Conexión a Pyodide" primero.');
+                return;
+            }
+            
+            const codeInput = cellElement.querySelector('.cell-input').value;
+            const outputElement = cellElement.querySelector('.output');
+            
+            outputElement.textContent = 'Ejecutando...';
+            
+            try {
+                // Ejecutar el código Python
+                const result = pyodide.runPython(codeInput);
+                
+                // Mostrar el resultado
+                outputElement.textContent = result !== undefined ? String(result) : '';
+                
+                // Actualizar el notebook data
+                const cellIndex = parseInt(cellElement.dataset.cellIndex);
+                if (notebookData && notebookData.cells[cellIndex]) {
+                    // Actualizar salidas
+                    notebookData.cells[cellIndex].outputs = [{
+                        output_type: 'execute_result',
+                        data: {
+                            'text/plain': [String(result)]
+                        },
+                        execution_count: null,
+                        metadata: {}
+                    }];
+                }
+            } catch (error) {
+                outputElement.textContent = `Error: ${error.message}`;
+                console.error('Error ejecutando celda:', error);
+            }
+        }
+
+        // Función para eliminar una celda
+        function deleteCell(cellElement) {
+            const cellIndex = parseInt(cellElement.dataset.cellIndex);
+            
+            if (notebookData && notebookData.cells[cellIndex]) {
+                notebookData.cells.splice(cellIndex, 1);
+                renderNotebook();
+            }
+        }
+
+        // Función para agregar una celda de markdown
+        function addMarkdownCell() {
+            const newCell = {
+                cell_type: 'markdown',
+                metadata: {},
+                source: ['# Nuevo título\n\nEscribe texto en formato markdown aquí...'],
+                id: uuid.v4()
+            };
+            
+            if (!notebookData) {
+                notebookData = {
+                    cells: [],
+                    metadata: {},
+                    nbformat: 4,
+                    nbformat_minor: 4
+                };
+            }
+            
+            notebookData.cells.push(newCell);
+            renderNotebook();
+        }
+
+        // Función para agregar una celda de código
+        function addCodeCell() {
+            const newCell = {
+                cell_type: 'code',
+                execution_count: null,
+                metadata: {},
+                source: ['# Escribe código Python aquí\n'],
+                outputs: [],
+                id: uuid.v4()
+            };
+            
+            if (!notebookData) {
+                notebookData = {
+                    cells: [],
+                    metadata: {},
+                    nbformat: 4,
+                    nbformat_minor: 4
+                };
+            }
+            
+            notebookData.cells.push(newCell);
+            renderNotebook();
+        }
+
+        // Función para ejecutar todas las celdas
+        async function runAllCells() {
+            if (!pyodide) {
+                alert('Pyodide no está inicializado. Haz clic en "Probar Conexión a Pyodide" primero.');
+                return;
+            }
+            
+            const cellElements = document.querySelectorAll('.notebook-cell[data-cell-type="code"]');
+            
+            for (const cellElement of cellElements) {
+                await executeCell(cellElement);
+            }
+        }
+
+        // Función para guardar el notebook
+        function saveNotebook() {
+            // Actualizar el contenido de las celdas desde los textarea
+            document.querySelectorAll('.notebook-cell').forEach((cellElement, index) => {
+                const textareaContent = cellElement.querySelector('.cell-input').value;
+                notebookData.cells[index].source = [textareaContent];
+            });
+            
+            // Crear blob y descargar
+            const notebookJson = JSON.stringify(notebookData, null, 2);
+            const blob = new Blob([notebookJson], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'notebook_export.ipynb';
+            a.click();
+            
+            URL.revokeObjectURL(url);
+        }
+
+        // Función para procesar solicitudes del agente IA
+        async function processAgentPrompt() {
+            const prompt = document.getElementById('agentPrompt').value.trim();
+            if (!prompt) {
+                alert('Por favor escribe una instrucción para el agente.');
+                return;
+            }
+            
+            const agentStatus = document.getElementById('agentStatus');
+            const processingOverlay = document.getElementById('processingOverlay');
+            
+            agentStatus.classList.remove('hidden');
+            processingOverlay.classList.remove('hidden');
+            agentStatus.textContent = 'Procesando solicitud...';
+            
+            try {
+                // Procesar con el LLM real
+                await processWithLLM(prompt);
+                
+                setTimeout(() => {
+                    agentStatus.classList.add('hidden');
+                }, 10000); // Mantener visible más tiempo para poder ver el resultado
+            } catch (error) {
+                agentStatus.innerHTML = `<strong>❌ Error:</strong> ${error.message}`;
+                console.error('Error en processAgentPrompt:', error);
+            } finally {
+                processingOverlay.classList.add('hidden');
+            }
+        }
+        
+        // Función de simulación para pruebas (no se usa en producción)
+        async function simulateAgentProcessing(prompt) {
+            console.log("Esta función es solo para pruebas y ha sido reemplazada por processWithLLM");
+            return processWithLLM(prompt);
+        }
+
+        // Función para procesar solicitudes con el LLM
+        async function processWithLLM(userPrompt) {
+            const agentStatus = document.getElementById('agentStatus');
+            
+            // Mostrar mensaje "Procesando solicitud"
+            agentStatus.innerHTML = '<div class="processing-steps">Procesando solicitud del usuario...</div>';
+            
+            try {
+                // Preparar la solicitud para el modelo
+                agentStatus.innerHTML += '<div class="processing-steps">Conectando con el modelo LLM en ' + MODEL_API_URL + '...</div>';
+                
+                const systemPromptText = SYSTEM_PROMPT + `\n\nLa solicitud del usuario es: "${userPrompt}"\n\nRecuerda: tu respuesta DEBE incluir celdas en formato XML usando las etiquetas <VSCode.Cell language="...">.`;
+                
+                const requestData = {
+                    model: "qwen2.5-7b-instruct-1m",
+                    messages: [
+                        {
+                            role: "system",
+                            content: systemPromptText
+                        },
+                        {
+                            role: "user",
+                            content: userPrompt
+                        }
+                    ],
+                    temperature: 0.7,
+                    max_tokens: 2000,
+                    top_p: 1
+                };
+                
+                console.log("Enviando solicitud al LLM:", requestData);
+                
+                // Realizar la petición al API
+                agentStatus.innerHTML += '<div class="processing-steps">Generando respuesta...</div>';
+                
+                const response = await fetch(MODEL_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Error en la API (${response.status} ${response.statusText}): ${errorText}`);
+                }
+                
+                const result = await response.json();
+                console.log("Respuesta del LLM:", result);
+                
+                if (!result.choices || !result.choices[0] || !result.choices[0].message) {
+                    throw new Error("La respuesta del LLM no tiene el formato esperado");
+                }
+                
+                const llmResponse = result.choices[0].message.content;
+                
+                agentStatus.innerHTML += '<div class="processing-steps">Procesando respuesta del modelo...</div>';
+                
+                // Extraer las celdas del formato XML
+                const xmlResponse = llmResponse;
+                const cells = extractCellsFromXML(xmlResponse);
+                
+                if (cells.length === 0) {
+                    // Si no se encontraron celdas, crear una celda markdown con la respuesta completa
+                    agentStatus.innerHTML += '<div class="processing-steps"><strong>⚠️ No se pudieron extraer celdas en formato XML.</strong> Creando celda con la respuesta completa...</div>';
+                    
+                    const fallbackCell = {
+                        cell_type: 'markdown',
+                        metadata: {},
+                        source: [`## Respuesta del Asistente\n\n${llmResponse}`],
+                        id: uuid.v4()
+                    };
+                    
+                    notebookData.cells.push(fallbackCell);
+                } else {
+                    // Añadir las celdas al notebook
+                    cells.forEach(cell => {
+                        notebookData.cells.push(cell);
+                    });
+                    
+                    // Mostrar respuesta y explicación
+                    agentStatus.innerHTML += `<div class="processing-steps"><strong>✅ Celdas generadas exitosamente:</strong> ${cells.length} celdas</div>`;
+                }
+                
+                // Mostrar la respuesta XML original (para depuración)
+                const preElement = document.createElement('pre');
+                preElement.style.background = '#f5f5f5';
+                preElement.style.padding = '10px';
+                preElement.style.borderRadius = '5px';
+                preElement.style.overflow = 'auto';
+                preElement.style.marginTop = '10px';
+                preElement.style.fontSize = '12px';
+                preElement.textContent = xmlResponse.trim();
+                
+                const respTitle = document.createElement('div');
+                respTitle.innerHTML = '<strong>Respuesta original del LLM:</strong>';
+                respTitle.style.marginTop = '15px';
+                
+                agentStatus.appendChild(respTitle);
+                agentStatus.appendChild(preElement);
+                
+                const explanation = `He añadido ${cells.length} nueva(s) celda(s) al notebook basadas en tu solicitud. Incluyen ${
+                    cells.filter(c => c.cell_type === 'markdown').length} celda(s) markdown y ${
+                    cells.filter(c => c.cell_type === 'code').length} celda(s) de código.`;
+                
+                agentStatus.innerHTML += `<div class="processing-steps"><strong>Explicación:</strong> ${explanation}</div>`;
+                
+                // Renderizar el notebook actualizado
+                renderNotebook();
+                
+                // Agregar enlace de descarga actualizado
+                const downloadLink = document.createElement('div');
+                downloadLink.innerHTML = '<button id="downloadGenerated" style="margin-top: 10px; background-color: #4caf50;">Descargar Notebook Generado</button>';
+                downloadLink.onclick = function() {
+                    saveNotebook();
+                };
+                agentStatus.appendChild(downloadLink);
+                
+            } catch (error) {
+                console.error('Error procesando con LLM:', error);
+                agentStatus.innerHTML += `<div class="processing-steps error"><strong>❌ Error:</strong> ${error.message}</div>`;
+                
+                // En caso de error, crear una celda básica que explique el problema
+                const errorCell = {
+                    cell_type: 'markdown',
+                    metadata: {},
+                    source: [
+                        `## Error al procesar la solicitud\n\n`,
+                        `Lo siento, ha ocurrido un error al procesar tu solicitud: "${userPrompt}"\n\n`,
+                        `Error: ${error.message}\n\n`,
+                        `Por favor, verifica la conexión con el servidor LLM (${MODEL_API_URL}) e intenta nuevamente.`
+                    ],
+                    id: uuid.v4()
+                };
+                
+                notebookData.cells.push(errorCell);
+                renderNotebook();
+            }
+        }
+        
+        // Función para extraer celdas del formato XML
+        function extractCellsFromXML(xmlContent) {
+            const cells = [];
+            const cellRegex = /<VSCode\.Cell\s+language=["'](.*?)["']>([\s\S]*?)<\/VSCode\.Cell>/g;
+            
+            console.log("Analizando respuesta XML:", xmlContent);
+            
+            let match;
+            while ((match = cellRegex.exec(xmlContent)) !== null) {
+                const language = match[1];
+                const content = match[2].trim();
+                
+                console.log(`Celda encontrada - Lenguaje: ${language}, Contenido: ${content.substring(0, 50)}...`);
+                
+                // Crear celda según el tipo
+                if (language.toLowerCase() === 'markdown') {
+                    cells.push({
+                        cell_type: 'markdown',
+                        metadata: {},
+                        source: [content],
+                        id: uuid.v4()
+                    });
+                } else if (language.toLowerCase() === 'python') {
+                    cells.push({
+                        cell_type: 'code',
+                        execution_count: null,
+                        metadata: {},
+                        source: [content],
+                        outputs: [],
+                        id: uuid.v4()
+                    });
+                }
+            }
+            
+            console.log(`Total de celdas extraídas: ${cells.length}`);
+            
+            // Si no se encuentran celdas, intentar con un formato alternativo
+            if (cells.length === 0) {
+                console.log("Intentando formato alternativo...");
+                // Formato alternativo: puede que el LLM use comillas simples o dobles, o envuelva en otra estructura
+                const altRegex = /language\s*=\s*["'](.*?)["'][\s\S]*?```([\s\S]*?)```/g;
+                
+                while ((match = altRegex.exec(xmlContent)) !== null) {
+                    const language = match[1];
+                    const content = match[2].trim();
+                    
+                    console.log(`Celda alternativa encontrada - Lenguaje: ${language}, Contenido: ${content.substring(0, 50)}...`);
+                    
+                    if (language.toLowerCase() === 'markdown') {
+                        cells.push({
+                            cell_type: 'markdown',
+                            metadata: {},
+                            source: [content],
+                            id: uuid.v4()
+                        });
+                    } else if (language.toLowerCase() === 'python') {
+                        cells.push({
+                            cell_type: 'code',
+                            execution_count: null,
+                            metadata: {},
+                            source: [content],
+                            outputs: [],
+                            id: uuid.v4()
+                        });
+                    }
+                }
+            }
+            
+            return cells;
+        }
+
+        // Agregar event listeners a los botones
+        document.getElementById('addMarkdownCell').addEventListener('click', addMarkdownCell);
+        document.getElementById('addCodeCell').addEventListener('click', addCodeCell);
+        document.getElementById('runAllCells').addEventListener('click', runAllCells);
+        document.getElementById('saveNotebook').addEventListener('click', saveNotebook);
+        document.getElementById('processPrompt').addEventListener('click', processAgentPrompt);
+        document.getElementById('checkLLM').addEventListener('click', checkLLMConnection);
+
+        // Función para verificar la conexión con el LLM
+        async function checkLLMConnection() {
+            const llmStatus = document.getElementById('llmStatus');
+            llmStatus.style.display = 'block';
+            llmStatus.textContent = 'Verificando conexión...';
+            llmStatus.style.backgroundColor = '#ffe0b2';
+            
+            try {
+                const response = await fetch(MODEL_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: "qwen2.5-7b-instruct-1m",
+                        messages: [
+                            {
+                                role: "user",
+                                content: "Hola"
+                            }
+                        ],
+                        max_tokens: 10
+                    })
+                });
+                
+                if (response.ok) {
+                    llmStatus.textContent = '✅ LLM conectado correctamente';
+                    llmStatus.style.backgroundColor = '#c8e6c9';
+                    setTimeout(() => {
+                        llmStatus.style.display = 'none';
+                    }, 5000);
+                } else {
+                    const errorText = await response.text();
+                    llmStatus.textContent = `❌ Error: ${response.status} ${response.statusText}`;
+                    llmStatus.style.backgroundColor = '#ffcdd2';
+                    console.error('Error en checkLLMConnection:', errorText);
+                }
+            } catch (error) {
+                llmStatus.textContent = `❌ Error: ${error.message}`;
+                llmStatus.style.backgroundColor = '#ffcdd2';
+                console.error('Error en checkLLMConnection:', error);
+            }
+        }
+
+        // Cargar notebook al iniciar
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelector('#notebook').innerHTML = `
+                <div class="status">
+                    Haz clic en "Probar Conexión a Pyodide" para iniciar...
+                </div>
+            `;
+        });
+    </script>
+</body>
+</html>
