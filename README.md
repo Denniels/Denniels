@@ -77,6 +77,8 @@ Curso práctico para crear aplicaciones web con Streamlit
 - 🔌 Integración con APIs y bases de datos
 - 💻 Proyectos prácticos paso a paso
 - [![Streamlit](https://img.shields.io/badge/-Streamlit%20Cloud-FF4B4B?style=flat&logo=Streamlit&logoColor=white)](https://curso-app-msfruskawjdyagcfp766na.streamlit.app/)
+
+### [ Curso Consola Windows](https://github.com/Denniels/consola_windows)
 - 📚 Módulos progresivos: básico, intermedio y avanzado
 - 🧩 Arquitectura modular y componentes reutilizables
 - 🧪 Prácticas interactivas y evaluaciones automáticas
