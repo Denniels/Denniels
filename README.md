@@ -65,7 +65,6 @@ Curso completo de control de versiones con Git
 - 🌐 Integración con GitHub y plataformas CI/CD
 - 📝 Ejercicios prácticos y material didáctico
 - [![Streamlit](https://img.shields.io/badge/-Streamlit%20Cloud-FF4B4B?style=flat&logo=Streamlit&logoColor=white)](https://cursogit-kq3qsbmsd2tou9rtvynkjw.streamlit.app/)
--  [Ver en Streamlit Cloud](https://cursogit-kq3qsbmsd2tou9rtvynkjw.streamlit.app/)
 
 Curso pr�ctico para crear aplicaciones web con Streamlit
 
