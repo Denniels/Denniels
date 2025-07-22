@@ -42,17 +42,24 @@ Especializado en automatizaci�n industrial, desarrollo de software (responsive
 
 ##  Proyectos Destacados
 
-### [ Data Science Portfolio](https://github.com/Denniels/ds_portfolio)
-Mi portafolio completo de proyectos de ciencia de datos
 
-### [📊 Data Science Portfolio](https://github.com/Denniels/ds_portfolio)
-Mi portafolio completo de proyectos de ciencia de datos
+### [📊 Portafolio Data Science (Streamlit)](https://github.com/Denniels/ds_portfolio)
+Portafolio interactivo de ciencia de datos desplegado en Streamlit Cloud
 - 🤖 Proyectos de Machine Learning
 - 📈 Análisis de datos y visualizaciones interactivas
 - 📂 Casos de estudio reales y datasets diversos
 - 🐍 Implementaciones en Python con Jupyter Notebooks
 - 🚀 Modelos desplegados y aplicaciones web
 - [![Streamlit](https://img.shields.io/badge/-Streamlit%20Cloud-FF4B4B?style=flat&logo=Streamlit&logoColor=white)](https://dsportfolio-jm67tsp8uwfsbnpfetysnh.streamlit.app/)
+
+### [🌐 Portafolio Web GitHub Pages](https://denniels.github.io/portafolio_html/)
+Portafolio web profesional desplegado en GitHub Pages
+- 💼 Proyectos destacados de desarrollo web
+- 🎨 Diseño responsive y moderno
+- 🖼️ Galería de trabajos y experiencias
+- ⚡ Tecnologías: HTML5, CSS3, JavaScript
+- 🔗 Pipeline de datos: notebooks Python → JSON → Frontend en GitHub Pages
+- [Visitar Portafolio en GitHub Pages](https://denniels.github.io/portafolio_html/)
 
 ### [🔧 Curso Git](https://github.com/Denniels/curso_git)
 Curso completo de control de versiones con Git
