@@ -1,7 +1,7 @@
-# �Hola!  Soy Daniel Mardones
+# 👋 ¡Hola!  Soy Daniel Mardones
 
 ##  Tecnico Industrial & Desarrollador Full Stack
-Especializado en automatizaci�n industrial, desarrollo de software (responsive web) y ciencia de datos.
+Especializado en automatizacioón industrial, desarrollo de software (responsive web) y ciencia de datos.
 
 [![GitHub followers](https://img.shields.io/github/followers/Denniels?label=Follow&style=social)](https://github.com/Denniels)
 [![LinkedIn](https://img.shields.io/badge/-LinkedIn-0077B5?style=flat&logo=LinkedIn&logoColor=white)](https://www.linkedin.com/in/daniel-andres-mardones-sanhueza-27b73777)
@@ -104,4 +104,4 @@ Curso práctico para crear aplicaciones web con Streamlit
 -  Web: [Integral Service SPA](https://integralservicespa.cl)
 
 ---
- From [Denniels](https://github.com/Denniels)
+ From [![GitHub](https://img.shields.io/badge/-Denniels-181717?style=flat&logo=github&logoColor=white)](https://github.com/Denniels)
