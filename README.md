@@ -54,9 +54,6 @@ Mi portafolio completo de proyectos de ciencia de datos
 - 🚀 Modelos desplegados y aplicaciones web
 - [![Streamlit](https://img.shields.io/badge/-Streamlit%20Cloud-FF4B4B?style=flat&logo=Streamlit&logoColor=white)](https://dsportfolio-jm67tsp8uwfsbnpfetysnh.streamlit.app/)
 
-
-### [ Curso Git](https://github.com/Denniels/curso_git)
-
 ### [🔧 Curso Git](https://github.com/Denniels/curso_git)
 Curso completo de control de versiones con Git
 - 🌿 Gestión de ramas y flujos de trabajo
