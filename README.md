@@ -59,7 +59,7 @@ Portafolio web profesional desplegado en GitHub Pages
 - 🖼️ Galería de trabajos y experiencias
 - ⚡ Tecnologías: HTML5, CSS3, JavaScript
 - 🔗 Pipeline de datos: notebooks Python → JSON → Frontend en GitHub Pages
-- [Visitar Portafolio en GitHub Pages](https://denniels.github.io/portafolio_html/)
+- [![GitHub Pages](https://img.shields.io/badge/-GitHub%20Pages-181717?style=flat&logo=github&logoColor=white)](https://denniels.github.io/portafolio_html/)
 
 ### [🔧 Curso Git](https://github.com/Denniels/curso_git)
 Curso completo de control de versiones con Git
