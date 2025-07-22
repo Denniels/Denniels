@@ -88,8 +88,8 @@ Curso práctico para crear aplicaciones web con Streamlit
 
 <div align="center">
   <a href="https://github.com/Denniels">
-    <img height="180em" src="https://github-readme-stats-git-masterrstaa-rickstaa.vercel.app/api?username=Denniels&show_icons=true&theme=dracula&include_all_commits=true&count_private=true" alt="Denniels GitHub stats"/>
-    <img height="180em" src="https://github-readme-stats-git-masterrstaa-rickstaa.vercel.app/api/top-langs/?username=Denniels&layout=compact&langs_count=7&theme=dracula" alt="Denniels Most Used Languages"/>
+    <img height="180em" src="https://github-readme-stats.vercel.app/api?username=Denniels&show_icons=true&theme=dracula&include_all_commits=true&count_private=true" alt="Denniels GitHub stats"/>
+    <img height="180em" src="https://github-readme-stats.vercel.app/api/top-langs/?username=Denniels&layout=compact&langs_count=7&theme=dracula" alt="Denniels Most Used Languages"/>
   </a>
 </div>
 
