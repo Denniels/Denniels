@@ -8,13 +8,13 @@ Especializado en automatizacioón industrial, desarrollo de software (responsive
 [![Streamlit Portfolio](https://img.shields.io/badge/-Data%20Science%20Portfolio-FF4B4B?style=flat&logo=Streamlit&logoColor=white)](https://dsportfolio-y6gztxm6cbtebqqvrbqpkb.streamlit.app/)
 
 ##  Experiencia
--  Automatización Industrial
--  Machine Learning
--  Desarrollo Web
--  Análisis de Datos
--  Sistemas Eléctricos
--  Refrigeración Industrial
--  Contenerización y despliegue con Docker
+- 🤖 Automatización Industrial
+- 🧠 Machine Learning
+- 💻 Desarrollo Web
+- 📊 Análisis de Datos
+- ⚡ Sistemas Eléctricos
+- ❄️ Refrigeración Industrial
+- 🐳 Contenerización y despliegue con Docker
 
 
 ##  Stack Tecnológico
@@ -70,7 +70,7 @@ Curso completo de control de versiones con Git
 - 📝 Ejercicios prácticos y material didáctico
 - [![Streamlit](https://img.shields.io/badge/-Streamlit%20Cloud-FF4B4B?style=flat&logo=Streamlit&logoColor=white)](https://cursogit-kq3qsbmsd2tou9rtvynkjw.streamlit.app/)
 
-Curso pr�ctico para crear aplicaciones web con Streamlit
+Curso practico para crear aplicaciones web con Streamlit
 
 ### [� Curso Streamlit](https://github.com/Denniels/curso-streamlit)
 Curso práctico para crear aplicaciones web con Streamlit
@@ -104,4 +104,4 @@ Curso práctico para crear aplicaciones web con Streamlit
 -  Web: [Integral Service SPA](https://integralservicespa.cl)
 
 ---
- From [![GitHub](https://img.shields.io/badge/-Denniels-181717?style=flat&logo=github&logoColor=white)](https://github.com/Denniels)
+[![GitHub](https://img.shields.io/badge/-Denniels-181717?style=flat&logo=github&logoColor=white)](https://github.com/Denniels)
