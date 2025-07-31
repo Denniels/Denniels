@@ -25,6 +25,8 @@ Especializado en automatizacioón industrial, desarrollo de software (responsive
 ![HTML5](https://img.shields.io/badge/-HTML5-E34F26?style=flat&logo=HTML5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/-CSS3-1572B6?style=flat&logo=CSS3&logoColor=white)
 ![SQL](https://img.shields.io/badge/-SQL-4479A1?style=flat&logo=MySQL&logoColor=white)
+![Arduino](https://img.shields.io/badge/-Arduino-00979D?style=flat&logo=Arduino&logoColor=white)
+![Linux](https://img.shields.io/badge/-Linux-FCC624?style=flat&logo=Linux&logoColor=black)
 
 ###  Frameworks & Herramientas
 ![Flask](https://img.shields.io/badge/-Flask-000000?style=flat&logo=Flask&logoColor=white)
@@ -40,8 +42,8 @@ Especializado en automatizacioón industrial, desarrollo de software (responsive
 ![TensorFlow](https://img.shields.io/badge/-TensorFlow-FF6F00?style=flat&logo=TensorFlow&logoColor=white)
 ![Jupyter](https://img.shields.io/badge/-Jupyter-F37626?style=flat&logo=Jupyter&logoColor=white)
 
-##  Proyectos Destacados
 
+##  Proyectos Destacados
 
 ### [📊 Portafolio Data Science (Streamlit)](https://github.com/Denniels/ds_portfolio)
 Portafolio interactivo de ciencia de datos desplegado en Streamlit Cloud
@@ -51,6 +53,15 @@ Portafolio interactivo de ciencia de datos desplegado en Streamlit Cloud
 - 🐍 Implementaciones en Python con Jupyter Notebooks
 - 🚀 Modelos desplegados y aplicaciones web
 - [![Streamlit](https://img.shields.io/badge/-Streamlit%20Cloud-FF4B4B?style=flat&logo=Streamlit&logoColor=white)](https://dsportfolio-jm67tsp8uwfsbnpfetysnh.streamlit.app/)
+
+### [📡 IoT Streamlit](https://github.com/Denniels/iot_streamlit)
+Aplicación IoT para monitoreo y visualización de datos en tiempo real con Streamlit
+- 🌐 Visualización de sensores y dispositivos conectados
+- 📶 Comunicación en tiempo real
+- 📊 Gráficas y dashboards interactivos
+- 🔌 Integración con bases de datos
+- 🐍 Backend en Python
+- [![Streamlit](https://img.shields.io/badge/-Streamlit%20Cloud-FF4B4B?style=flat&logo=Streamlit&logoColor=white)](https://iotapp-jvwtoekeo73ruxn9mdhfnc.streamlit.app/)
 
 ### [🌐 Portafolio Web GitHub Pages](https://denniels.github.io/portafolio_html/)
 Portafolio web profesional desplegado en GitHub Pages
