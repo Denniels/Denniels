@@ -1,6 +1,6 @@
 # 👋 ¡Hola!  Soy Daniel Mardones
 
-##  Tecnico Industrial & Desarrollador Full Stack
+##  Tecnico Industrial & Data Engineer
 Especializado en automatizacioón industrial, desarrollo de software (responsive web) y ciencia de datos.
 
 [![GitHub followers](https://img.shields.io/github/followers/Denniels?label=Follow&style=social)](https://github.com/Denniels)
